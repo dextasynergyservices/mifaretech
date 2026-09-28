@@ -1,78 +1,78 @@
-"use client";
-
-import {
-  ArrowRight,
-  CheckCircle2,
-  ChevronDown,
-  Headphones,
-  HelpCircle,
-  ShieldCheck,
-  ShoppingBag,
-  Star,
-  Wrench,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, Headphones, ShieldCheck, Star, Wrench } from "lucide-react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { Reveal, SplitLines } from "@/components/motion/reveal";
-import { useEnquiryBasket } from "@/lib/basket-store";
-import { PRODUCTS } from "@/lib/catalogue-data";
+import { CompareToggleButton } from "@/components/site/compare-toggle-button";
+import { EnquireButton } from "@/components/site/enquire-button";
+import { FaqAccordion } from "@/components/site/faq-accordion";
+import { PosAdvisorQuiz } from "@/components/site/pos-advisor-quiz";
+import {
+  getContentBlocks,
+  getFaqs,
+  getFeaturedProducts,
+  getPageSeo,
+  getPartners,
+  getTestimonials,
+} from "@/server/queries";
 
-export default function HomePage() {
-  const { addItem } = useEnquiryBasket();
-  const [addedId, setAddedId] = useState<string | null>(null);
-
-  // Quiz state
-  const [quizStep, setQuizStep] = useState(0);
-  const [quizAnswers, setQuizAnswers] = useState({
-    business: "Retail Store",
-    tills: "1–2 Counters",
-    priority: "High Reliability & Speed",
-  });
-  const [quizCompleted, setQuizCompleted] = useState(false);
-
-  // FAQ open states
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-
-  const handleEnquire = (product: (typeof PRODUCTS)[0]) => {
-    addItem(product);
-    setAddedId(product.id);
-    setTimeout(() => setAddedId(null), 1800);
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("home");
+  return {
+    title: seo?.title || "Mifaretech | ...lean forward smartly!",
+    description:
+      seo?.description ||
+      "Accredited distributor of high-performance POS touch terminals, thermal receipt printers, and barcode scanners.",
   };
+}
 
-  const faqs = [
+export default async function HomePage() {
+  const [content, featuredProducts, partnersList, testimonialsList, faqsList] = await Promise.all([
+    getContentBlocks("home"),
+    getFeaturedProducts(6),
+    getPartners(),
+    getTestimonials(),
+    getFaqs(),
+  ]);
+
+  const heroBlock = content.byKey.hero;
+  const whyBlock = content.byKey["why-mifaretech"];
+  const whyPillars = (
+    whyBlock?.data as { pillars?: Array<{ number: string; title: string; desc: string }> }
+  )?.pillars || [
     {
-      q: "Does Mifaretech hardware include a manufacturer warranty?",
-      a: "Yes. As an accredited distributor of Fametech and certified POS brands, our terminals come with standard manufacturer warranties covering parts and bench repair, backed by our swift replacement service.",
+      number: "01",
+      title: "Direct Factory Provenance",
+      desc: "Zero grey-market risk. All hardware originates directly from Fametech assembly lines with sealed warranties.",
     },
     {
-      q: "Can we order multiple items for a multi-branch rollout?",
-      a: "Absolutely. We supply single-store operators as well as supermarket chains and nationwide franchises. Click 'Enquire' on any hardware to build an enquiry basket with the quantities you need.",
+      number: "02",
+      title: "Counter Uptime Engineering",
+      desc: "Commercial fanless aluminum housings protect internal components from dust, grease, and continuous vibration.",
     },
     {
-      q: "Are your POS terminals compatible with third-party software?",
-      a: "Yes. Our terminals run standard Windows 10/11 IoT Enterprise, Linux, or Android, with open OPOS/JPOS driver support for receipt printers, cash drawers, and customer-facing displays.",
-    },
-    {
-      q: "How fast is delivery and dispatch?",
-      a: "In-stock hardware is dispatched promptly from our logistics hubs with express tracked delivery across the UK and established West African trade channels.",
+      number: "03",
+      title: "Dedicated Hardware Specialists",
+      desc: "Direct access to specialists who understand interface drivers, OPOS configurations, and multi-terminal deployments.",
     },
   ];
 
   return (
-    <div className="flex flex-col gap-24 sm:gap-32 pb-20">
-      {/* 1. HERO SECTION (Patterned after Noho) */}
+    <div className="flex flex-col gap-24 sm:gap-32 pb-20 overflow-x-hidden">
+      {/* 1. HERO SECTION */}
       <section className="relative pt-12 sm:pt-20 lg:pt-28 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
-            {/* Left Half: Staggered Headlines & CTAs */}
+            {/* Left Column: Headlines & Actions */}
             <div className="lg:col-span-7 space-y-3">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/80 border border-brand-200 dark:border-brand-800 text-brand-700 dark:text-brand-300 text-xs font-bold uppercase tracking-wider">
                 <ShieldCheck className="size-3.5 text-accent" />
-                <span>Accredited Fametech Distributor</span>
+                <span>
+                  {(heroBlock?.data as { badge?: string })?.badge ||
+                    "Accredited Fametech Distributor"}
+                </span>
               </div>
 
-              {/* Noho-style line-by-line staggered reveal */}
               <div className="space-y-1">
                 <SplitLines
                   lines={[
@@ -80,17 +80,17 @@ export default function HomePage() {
                       key="1"
                       className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight"
                     >
-                      We engineer hardware
+                      {heroBlock?.title || "We engineer hardware"}
                     </span>,
                     <span
                       key="2"
-                      className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight"
+                      className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-brand-700 dark:text-brand-400"
                     >
                       for busy counters,
                     </span>,
                     <span
                       key="3"
-                      className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-brand-700 dark:text-brand-400"
+                      className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight"
                     >
                       Mifaretech <span className="text-accent font-black">...</span>lean forward
                       smartly!
@@ -101,11 +101,14 @@ export default function HomePage() {
               </div>
 
               <Reveal delay={0.2}>
-                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl">
-                  Accredited distributor of high-performance POS touch terminals, thermal receipt
-                  printers, omnidirectional barcode scanners, and enterprise retail infrastructure.
-                  Built for non-stop reliability.
-                </p>
+                <div
+                  className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl"
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      heroBlock?.bodyHtml ||
+                      "<p>Accredited distributor of high-performance POS touch terminals, thermal receipt printers, omnidirectional barcode scanners, and enterprise retail infrastructure. Built for non-stop reliability.</p>",
+                  }}
+                />
               </Reveal>
 
               <Reveal delay={0.3}>
@@ -127,7 +130,6 @@ export default function HomePage() {
                 </div>
               </Reveal>
 
-              {/* Quick highlights */}
               <Reveal delay={0.4}>
                 <div className="pt-4 flex flex-wrap items-center gap-6 text-xs font-semibold text-muted-foreground">
                   <div className="flex items-center gap-2">
@@ -146,15 +148,14 @@ export default function HomePage() {
               </Reveal>
             </div>
 
-            {/* Right Half: Noho-Style Scattered Small Product Image Tiles (Staggered Dynamic Cascade, Non-Linear Arrangement) */}
+            {/* Right Column: Noho-Style Scattered Hardware Tiles */}
             <div className="lg:col-span-5 w-full">
               <Reveal delay={0.2} yOffset={20}>
                 <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 items-start">
-                  {/* Column 1: Starts at top level with headline */}
+                  {/* Column 1 */}
                   <div className="flex flex-col gap-2.5 sm:gap-3.5 pt-0">
-                    {/* Top Tile Desktop: Mobile Handheld Terminal */}
                     <Link
-                      href="/catalogue"
+                      href="/catalogue/compact-mobile-pos-terminal"
                       className="hidden lg:flex group relative aspect-square w-full rounded-2xl bg-[#E8F3EB] dark:bg-[#16291e] p-3 flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[-1.5deg] hover:rotate-0"
                       title="Mobile Handheld POS Terminal"
                     >
@@ -178,7 +179,6 @@ export default function HomePage() {
                       </span>
                     </Link>
 
-                    {/* Tile 1: Touch POS Terminal */}
                     <Link
                       href="/catalogue/fametech-pos-1000"
                       className="group relative aspect-square w-full rounded-2xl bg-[#F5EFE6] dark:bg-[#18233c] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[1deg] hover:rotate-0"
@@ -204,9 +204,8 @@ export default function HomePage() {
                       </span>
                     </Link>
 
-                    {/* Tile 2: Handheld Barcode Scanner */}
                     <Link
-                      href="/catalogue"
+                      href="/catalogue?category=barcode-scanners"
                       className="group relative aspect-square w-full rounded-2xl bg-[#EAF1E7] dark:bg-[#18281e] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[-1deg] hover:rotate-0"
                       title="Handheld Barcode Scanner"
                     >
@@ -231,11 +230,10 @@ export default function HomePage() {
                     </Link>
                   </div>
 
-                  {/* Column 2: Stepped down substantially to create an organic valley & break straight line */}
+                  {/* Column 2: Stepped down */}
                   <div className="flex flex-col gap-2.5 sm:gap-3.5 pt-8 sm:pt-12 lg:pt-14">
-                    {/* Top Tile Desktop: Omnidirectional Countertop Scanner */}
                     <Link
-                      href="/catalogue"
+                      href="/catalogue/omnidirectional-countertop-scanner"
                       className="hidden lg:flex group relative aspect-square w-full rounded-2xl bg-[#FDECE6] dark:bg-[#2e1b18] p-3 flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[1.5deg] hover:rotate-0"
                       title="Omnidirectional Counter Scanner"
                     >
@@ -259,7 +257,6 @@ export default function HomePage() {
                       </span>
                     </Link>
 
-                    {/* Tile 3: Thermal Receipt Printer */}
                     <Link
                       href="/catalogue/heavy-duty-thermal-receipt-printer"
                       className="group relative aspect-square w-full rounded-2xl bg-[#FAECE4] dark:bg-[#2c1d1a] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[-1deg] hover:rotate-0"
@@ -285,9 +282,8 @@ export default function HomePage() {
                       </span>
                     </Link>
 
-                    {/* Tile 4: Heavy-Duty Cash Drawer */}
                     <Link
-                      href="/catalogue"
+                      href="/catalogue/heavy-duty-steel-cash-drawer"
                       className="group relative aspect-square w-full rounded-2xl bg-[#E8EDF8] dark:bg-[#1a233a] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[1deg] hover:rotate-0"
                       title="Heavy-Duty Cash Drawer"
                     >
@@ -312,11 +308,10 @@ export default function HomePage() {
                     </Link>
                   </div>
 
-                  {/* Column 3: Stepped midway to complete the dynamic wave contour */}
+                  {/* Column 3: Stepped midway */}
                   <div className="flex flex-col gap-2.5 sm:gap-3.5 pt-4 sm:pt-6 lg:pt-7">
-                    {/* Top Tile Desktop: Interactive Self-Ordering Kiosk */}
                     <Link
-                      href="/catalogue"
+                      href="/catalogue/interactive-self-service-kiosk"
                       className="hidden lg:flex group relative aspect-square w-full rounded-2xl bg-[#EAEBF8] dark:bg-[#191e38] p-3 flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[-1deg] hover:rotate-0"
                       title="Self-Ordering Interactive Kiosk"
                     >
@@ -340,11 +335,10 @@ export default function HomePage() {
                       </span>
                     </Link>
 
-                    {/* Tile 5: Customer Pole Display */}
                     <Link
-                      href="/catalogue"
+                      href="/catalogue?category=pos-terminals"
                       className="group relative aspect-square w-full rounded-2xl bg-[#FEF6E9] dark:bg-[#282218] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[1.5deg] hover:rotate-0"
-                      title="VFD Customer Pole Display"
+                      title="Customer Pole Display"
                     >
                       <div className="w-full flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
                         <span>Pole</span>
@@ -366,11 +360,10 @@ export default function HomePage() {
                       </span>
                     </Link>
 
-                    {/* Tile 6: Kiosk Self-Service Engine */}
                     <Link
-                      href="/catalogue"
+                      href="/catalogue?category=kiosks"
                       className="group relative aspect-square w-full rounded-2xl bg-[#EAF4F6] dark:bg-[#16272e] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[-1.5deg] hover:rotate-0"
-                      title="Self-Service Kiosk Engine"
+                      title="Kiosk Engine"
                     >
                       <div className="w-full flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
                         <span>Kiosk</span>
@@ -408,26 +401,33 @@ export default function HomePage() {
                 Authorized Distribution
               </p>
               <p className="text-sm font-extrabold tracking-tight">
-                Direct Certified Brands & Standards
+                Direct Certified Brands &amp; Standards
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center md:justify-end gap-8 sm:gap-12 opacity-80">
-              <span className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors">
-                FAMETECH
-              </span>
-              <span className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors">
-                CITIZEN
-              </span>
-              <span className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors">
-                EPSON-ESC/POS
-              </span>
-              <span className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors">
-                HONEYWELL
-              </span>
-              <span className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors">
-                DATALOGIC
-              </span>
+            <div className="flex flex-wrap items-center justify-center md:justify-end gap-8 sm:gap-12 opacity-85">
+              {partnersList.length > 0 ? (
+                partnersList.map((partner) => (
+                  <span
+                    key={partner.id}
+                    className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {partner.name}
+                  </span>
+                ))
+              ) : (
+                <>
+                  <span className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground">
+                    FAMETECH (TYSSO)
+                  </span>
+                  <span className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground">
+                    INTEL IOT
+                  </span>
+                  <span className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground">
+                    MICROSOFT IOT
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -472,7 +472,7 @@ export default function HomePage() {
         </Reveal>
       </section>
 
-      {/* 4. FEATURED HARDWARE CATALOGUE CARDS */}
+      {/* 4. FEATURED PRODUCTS CATALOGUE CARDS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
           <div>
@@ -487,13 +487,13 @@ export default function HomePage() {
             href="/catalogue"
             className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-brand-300 hover:underline"
           >
-            <span>View Full Catalogue ({PRODUCTS.length} hardware types)</span>
+            <span>View Full Catalogue</span>
             <ArrowRight className="size-4" />
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {PRODUCTS.slice(0, 3).map((product) => (
+          {featuredProducts.slice(0, 3).map((product) => (
             <div
               key={product.id}
               className="flex flex-col justify-between p-6 rounded-3xl bg-card border border-border hover:border-brand-500/50 transition-all duration-300 shadow-xs hover:shadow-lg group"
@@ -502,268 +502,148 @@ export default function HomePage() {
                 <div className="relative aspect-4/3 w-full bg-secondary/30 rounded-2xl p-6 mb-6 flex items-center justify-center overflow-hidden">
                   <div className="relative size-40 group-hover:scale-105 transition-transform duration-500">
                     <Image
-                      src={product.image}
+                      src={product.cover?.secureUrl || "/logo.png"}
                       alt={product.name}
                       fill
-                      sizes="160px"
+                      sizes="(max-width: 768px) 100vw, 300px"
                       className="object-contain"
                     />
                   </div>
-                  <div className="absolute top-3 left-3">
-                    <span className="editorial-badge">{product.categoryName}</span>
+                  {/* Top overlay badge bar */}
+                  <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2 z-10 pointer-events-none">
+                    {product.category ? (
+                      <span className="editorial-badge pointer-events-auto text-[10px] truncate max-w-[140px]">
+                        {product.category.name}
+                      </span>
+                    ) : (
+                      <div />
+                    )}
+                    <div className="pointer-events-auto shrink-0">
+                      <CompareToggleButton product={product} />
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    {product.modelNumber}
-                  </p>
-                  <h3 className="text-xl font-bold tracking-tight group-hover:text-brand-700 dark:group-hover:text-brand-400 transition-colors">
+                <div className="space-y-1.5">
+                  {product.modelNumber && (
+                    <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
+                      {product.modelNumber}
+                    </p>
+                  )}
+                  <h3 className="text-lg sm:text-xl font-bold tracking-tight text-foreground line-clamp-2 min-h-[3.25rem] leading-snug group-hover:text-brand-700 dark:group-hover:text-brand-400 transition-colors">
                     {product.name}
                   </h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                    {product.shortDescription}
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 min-h-[2.5rem]">
+                    {product.shortDescription || "Commercial hardware for enterprise deployments."}
                   </p>
                 </div>
 
-                <ul className="mt-4 space-y-1.5 border-t border-border/70 pt-4">
-                  {product.highlights.slice(0, 2).map((highlight) => (
-                    <li
-                      key={highlight}
-                      className="flex items-start gap-2 text-xs text-foreground/80"
-                    >
-                      <CheckCircle2 className="size-3.5 text-emerald-500 mt-0.5 shrink-0" />
-                      <span className="line-clamp-1">{highlight}</span>
-                    </li>
-                  ))}
-                </ul>
+                {product.highlights && product.highlights.length > 0 && (
+                  <ul className="mt-4 space-y-1.5 border-t border-border/70 pt-4">
+                    {product.highlights.slice(0, 2).map((highlight) => (
+                      <li
+                        key={highlight}
+                        className="flex items-start gap-2 text-xs text-foreground/80"
+                      >
+                        <CheckCircle2 className="size-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                        <span className="line-clamp-1">{highlight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
-              {/* Actions: Learn More & Enquire */}
-              <div className="pt-6 mt-6 border-t border-border flex items-center justify-between gap-3">
+              {/* Actions: View Details & Enquire */}
+              <div className="pt-4 mt-5 border-t border-border/70 flex items-center gap-2.5 w-full">
                 <Link
                   href={`/catalogue/${product.slug}`}
-                  className="text-xs font-bold text-muted-foreground hover:text-foreground underline underline-offset-4"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-full border border-border/80 bg-secondary/50 hover:bg-secondary text-foreground text-xs font-bold transition-all whitespace-nowrap text-center group/link shadow-2xs"
                 >
-                  Learn more
+                  <span>View Details</span>
+                  <ArrowRight className="size-3.5 text-muted-foreground group-hover/link:translate-x-0.5 transition-transform" />
                 </Link>
 
-                <button
-                  type="button"
-                  onClick={() => handleEnquire(product)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent hover:bg-accent-600 text-accent-foreground font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-xs active:scale-95"
-                >
-                  <ShoppingBag className="size-3.5" />
-                  <span>{addedId === product.id ? "Added!" : "Enquire"}</span>
-                </button>
+                <div className="flex-1">
+                  <EnquireButton
+                    product={product}
+                    className="w-full py-2.5 px-3 text-center justify-center whitespace-nowrap shadow-2xs"
+                  />
+                </div>
               </div>
             </div>
           ))}
         </div>
+
+        {/* Centered View More / Full Catalogue Button */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-10">
+          <Link
+            href="/catalogue"
+            className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-card border-2 border-brand-700/40 dark:border-brand-400/40 hover:border-brand-700 dark:hover:border-brand-400 hover:bg-secondary/70 text-foreground font-bold text-xs uppercase tracking-widest transition-all shadow-sm active:scale-98"
+          >
+            <span>Explore Full Catalogue</span>
+            <ArrowRight className="size-4 text-accent" />
+          </Link>
+        </div>
       </section>
 
-      {/* 5. NUMBERED WHY MIFARETECH (01 / 02 / 03 - Noho Pattern) */}
+      {/* 5. NUMBERED WHY MIFARETECH (01 / 02 / 03) */}
       <section className="bg-secondary/40 py-20 border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <span className="editorial-tag text-brand-700 dark:text-brand-300">Why Mifaretech</span>
             <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight mt-1">
-              Built on trust, verified in service
+              {whyBlock?.title || "Built on trust, verified in service"}
             </h2>
-            <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-              We eliminate counterfeit risks, slow response times, and orphaned hardware by
-              providing end-to-end support for retail automation.
-            </p>
+            <div
+              className="text-sm text-muted-foreground mt-3 leading-relaxed"
+              dangerouslySetInnerHTML={{
+                __html:
+                  whyBlock?.bodyHtml ||
+                  "<p>We eliminate counterfeit risks, slow response times, and orphaned hardware by providing end-to-end support for retail automation.</p>",
+              }}
+            />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-3xl bg-card border border-border relative overflow-hidden flex flex-col justify-between">
-              <span className="text-5xl font-black text-brand-500/20 dark:text-brand-400/20 select-none">
-                01
-              </span>
-              <div className="space-y-3 mt-6">
-                <div className="size-10 rounded-2xl bg-brand-50 dark:bg-brand-900/50 flex items-center justify-center text-brand-700 dark:text-brand-300">
-                  <ShieldCheck className="size-5" />
+            {whyPillars.map((pillar, i) => (
+              <div
+                key={pillar.number}
+                className="p-8 rounded-3xl bg-card border border-border relative overflow-hidden flex flex-col justify-between"
+              >
+                <span
+                  className={`text-5xl font-black select-none ${
+                    i === 1 ? "text-accent/20" : "text-brand-500/20 dark:text-brand-400/20"
+                  }`}
+                >
+                  {pillar.number}
+                </span>
+                <div className="space-y-3 mt-6">
+                  <div
+                    className={`size-10 rounded-2xl flex items-center justify-center ${
+                      i === 1
+                        ? "bg-accent-50 dark:bg-accent-900/30 text-accent"
+                        : "bg-brand-50 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300"
+                    }`}
+                  >
+                    {i === 0 && <ShieldCheck className="size-5" />}
+                    {i === 1 && <Wrench className="size-5" />}
+                    {i === 2 && <Headphones className="size-5" />}
+                  </div>
+                  <h3 className="text-xl font-bold tracking-tight">{pillar.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{pillar.desc}</p>
                 </div>
-                <h3 className="text-xl font-bold tracking-tight">Accredited Supply</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Direct partnership with Fametech and accredited hardware manufacturers. Zero
-                  second-hand or grey-market inventory. All units ship with verified serial numbers
-                  and factory warranties.
-                </p>
               </div>
-            </div>
-
-            <div className="p-8 rounded-3xl bg-card border border-border relative overflow-hidden flex flex-col justify-between">
-              <span className="text-5xl font-black text-accent/20 select-none">02</span>
-              <div className="space-y-3 mt-6">
-                <div className="size-10 rounded-2xl bg-accent-50 dark:bg-accent-900/30 flex items-center justify-center text-accent">
-                  <Wrench className="size-5" />
-                </div>
-                <h3 className="text-xl font-bold tracking-tight">Installation & Training</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Beyond shipping boxes, we configure drivers, connect peripherals, calibrate touch
-                  panels, and guide your floor supervisors through day-one checkout operations.
-                </p>
-              </div>
-            </div>
-
-            <div className="p-8 rounded-3xl bg-card border border-border relative overflow-hidden flex flex-col justify-between">
-              <span className="text-5xl font-black text-brand-500/20 dark:text-brand-400/20 select-none">
-                03
-              </span>
-              <div className="space-y-3 mt-6">
-                <div className="size-10 rounded-2xl bg-brand-50 dark:bg-brand-900/50 flex items-center justify-center text-brand-700 dark:text-brand-300">
-                  <Headphones className="size-5" />
-                </div>
-                <h3 className="text-xl font-bold tracking-tight">Support & Warranty</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  A named account representative, dedicated technical hotline, and replacement parts
-                  repository ensure your billing lanes suffer zero prolonged downtime.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 6. INTERACTIVE DISCOVERY QUIZ (Find the right POS) */}
+      {/* 6. DISCOVERY QUIZ */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="p-8 sm:p-12 rounded-3xl bg-card border border-border shadow-xl">
-          <div className="text-center max-w-xl mx-auto mb-8">
-            <span className="editorial-tag text-accent">Hardware Recommendation Quiz</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
-              Find the right POS for your business
-            </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-              Answer 3 quick questions to identify the ideal setup for your counters.
-            </p>
-          </div>
-
-          {!quizCompleted ? (
-            <div className="space-y-6">
-              {quizStep === 0 && (
-                <div className="space-y-4">
-                  <p className="text-sm font-bold text-center">
-                    Step 1 of 3: What is your primary business type?
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {["Retail Store", "Supermarket", "Restaurant / Cafe", "Pharmacy"].map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => {
-                          setQuizAnswers({ ...quizAnswers, business: opt });
-                          setQuizStep(1);
-                        }}
-                        className={`p-4 rounded-2xl border text-xs font-bold text-center transition-all cursor-pointer ${
-                          quizAnswers.business === opt
-                            ? "border-brand-600 bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300"
-                            : "border-border bg-background hover:bg-muted"
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {quizStep === 1 && (
-                <div className="space-y-4">
-                  <p className="text-sm font-bold text-center">
-                    Step 2 of 3: How many checkout counters or tills do you operate?
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {["1 Counter", "2–4 Counters", "5–10 Counters", "10+ Enterprise"].map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => {
-                          setQuizAnswers({ ...quizAnswers, tills: opt });
-                          setQuizStep(2);
-                        }}
-                        className={`p-4 rounded-2xl border text-xs font-bold text-center transition-all cursor-pointer ${
-                          quizAnswers.tills === opt
-                            ? "border-brand-600 bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300"
-                            : "border-border bg-background hover:bg-muted"
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {quizStep === 2 && (
-                <div className="space-y-4">
-                  <p className="text-sm font-bold text-center">
-                    Step 3 of 3: What is your biggest hardware priority?
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {[
-                      "High Reliability & Speed",
-                      "Self-Service & Compact",
-                      "Budget Efficiency",
-                    ].map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => {
-                          setQuizAnswers({ ...quizAnswers, priority: opt });
-                          setQuizCompleted(true);
-                        }}
-                        className="p-4 rounded-2xl border border-border bg-background hover:border-brand-600 text-xs font-bold text-center transition-all cursor-pointer"
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center space-y-6 p-6 rounded-2xl bg-secondary/50 border border-border">
-              <div className="inline-flex size-12 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 items-center justify-center">
-                <CheckCircle2 className="size-6" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-bold">
-                  Recommended Configuration: All-In-One Enterprise Station
-                </h3>
-                <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                  Based on your business ({quizAnswers.business}), {quizAnswers.tills}, and priority
-                  on {quizAnswers.priority}, we recommend the{" "}
-                  <strong>POS-1000-HD Touch Terminal</strong> paired with the{" "}
-                  <strong>PRP-300 Thermal Printer</strong>.
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-                <Link
-                  href="/contact"
-                  className="px-6 py-3 rounded-full bg-accent hover:bg-accent-600 text-accent-foreground font-black text-xs uppercase tracking-wider shadow-sm transition-all"
-                >
-                  Enquire with this Configuration
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuizStep(0);
-                    setQuizCompleted(false);
-                  }}
-                  className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer"
-                >
-                  Retake quiz
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <PosAdvisorQuiz />
       </section>
 
-      {/* 7. PEOPLE STORIES / TESTIMONIALS */}
+      {/* 7. CLIENT STORIES / TESTIMONIALS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-center max-w-2xl mx-auto mb-12">
           <span className="editorial-tag text-brand-700 dark:text-brand-300">Client Stories</span>
@@ -773,31 +653,9 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              quote:
-                "Our supermarket checkout queues move twice as fast since adopting the POS-1000 terminals and omni-scanners. Truly industrial hardware.",
-              author: "Adewale O.",
-              role: "Head of Operations",
-              company: "Pinnacle Groceries & Supermarkets",
-            },
-            {
-              quote:
-                "The thermal printers withstand endless daily printing without jamming. Mifaretech’s warranty and support give us complete peace of mind.",
-              author: "Sarah M.",
-              role: "Retail Director",
-              company: "Apex Pharmacy Network",
-            },
-            {
-              quote:
-                "Fast dispatch, genuine Fametech units with clean cable management. Having a named contact who knows POS technology is invaluable.",
-              author: "James T.",
-              role: "General Manager",
-              company: "Urban Table Hospitality",
-            },
-          ].map((item) => (
+          {testimonialsList.map((item) => (
             <div
-              key={item.author}
+              key={item.id}
               className="p-6 sm:p-8 rounded-3xl bg-card border border-border flex flex-col justify-between space-y-6"
             >
               <div className="space-y-4">
@@ -811,9 +669,10 @@ export default function HomePage() {
                 </p>
               </div>
               <div className="border-t border-border pt-4">
-                <p className="text-xs font-bold text-foreground">{item.author}</p>
+                <p className="text-xs font-bold text-foreground">{item.authorName}</p>
                 <p className="text-[11px] text-muted-foreground">
-                  {item.role}, {item.company}
+                  {item.authorRole ? `${item.authorRole}, ` : ""}
+                  {item.company}
                 </p>
               </div>
             </div>
@@ -832,38 +691,13 @@ export default function HomePage() {
           </h2>
         </div>
 
-        <div className="space-y-4">
-          {faqs.map((faq, idx) => {
-            const isOpen = openFaq === idx;
-            return (
-              <div
-                key={faq.q}
-                className="rounded-2xl border border-border bg-card overflow-hidden transition-colors"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  className="w-full p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base cursor-pointer hover:bg-muted/40 transition-colors"
-                >
-                  <span className="flex items-center gap-3">
-                    <HelpCircle className="size-4 text-brand-700 dark:text-brand-400 shrink-0" />
-                    <span>{faq.q}</span>
-                  </span>
-                  <ChevronDown
-                    className={`size-4 text-muted-foreground shrink-0 transition-transform duration-200 ${
-                      isOpen ? "rotate-180 text-foreground" : ""
-                    }`}
-                  />
-                </button>
-                {isOpen && (
-                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border/40">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <FaqAccordion
+          items={faqsList.map((f) => ({
+            id: f.id,
+            question: f.question,
+            answerHtml: f.answerHtml,
+          }))}
+        />
       </section>
 
       {/* 9. FINAL CALL TO ACTION BANNER */}

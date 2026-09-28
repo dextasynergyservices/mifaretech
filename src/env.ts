@@ -8,7 +8,7 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: z.string().min(32),
     BETTER_AUTH_URL: z.url(),
     IP_HASH_SALT: z.string().min(16),
-    RESEND_API_KEY: z.string().min(10),
+    RESEND_API_KEY: z.string().min(10).default("re_placeholder_key_dev"),
     EMAIL_FROM: z.string().min(3),
     SALES_INBOX: z.email(),
     RECAPTCHA_SECRET_KEY: z.string().min(10),

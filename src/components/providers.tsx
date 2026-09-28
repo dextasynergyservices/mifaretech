@@ -17,6 +17,8 @@ export function useMotionPreference() {
   return React.useContext(MotionPreferenceContext);
 }
 
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [isReducedMotion, setIsReducedMotion] = React.useState<boolean>(false);
 
@@ -63,15 +65,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <MotionPreferenceContext.Provider value={{ isReducedMotion, toggleReducedMotion }}>
-        {children}
-      </MotionPreferenceContext.Provider>
-    </NextThemesProvider>
+    <NuqsAdapter>
+      <NextThemesProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <MotionPreferenceContext.Provider value={{ isReducedMotion, toggleReducedMotion }}>
+          {children}
+        </MotionPreferenceContext.Provider>
+      </NextThemesProvider>
+    </NuqsAdapter>
   );
 }

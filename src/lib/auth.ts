@@ -1,3 +1,4 @@
+import "server-only";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
@@ -5,7 +6,7 @@ import { admin, twoFactor } from "better-auth/plugins";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 import { env } from "@/env";
-// import { sendPasswordResetEmail } from "@/lib/email/send";
+import { sendPasswordResetEmail } from "@/lib/email/send";
 
 export const auth = betterAuth({
   appName: "Mifaretech Admin",
@@ -16,12 +17,12 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    disableSignUp: true, // staff are created by an admin, never self-registered
+    disableSignUp: true, // staff are created by an admin or seed, never self-registered
     minPasswordLength: 12,
     maxPasswordLength: 128,
-    // sendResetPassword: async ({ user, url }) => {
-    //   await sendPasswordResetEmail(user.email, url);
-    // },
+    sendResetPassword: async ({ user, url }) => {
+      await sendPasswordResetEmail(user.email, url);
+    },
   },
 
   session: {
