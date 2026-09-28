@@ -1,11 +1,28 @@
-"use client";
-
 import { ArrowRight, Award, Building, Globe, ShieldCheck } from "lucide-react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Reveal, SplitLines } from "@/components/motion/reveal";
+import { getContentBlocks, getPageSeo, getPartners, getSettings } from "@/server/queries";
 
-export default function AboutPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getPageSeo("about");
+  return {
+    title: seo?.title || "About Us | Mifaretech",
+    description:
+      seo?.description ||
+      "Accredited distributor bridge connecting direct Fametech hardware engineering with enterprise retail operators.",
+  };
+}
+
+export default async function AboutPage() {
+  const [content, partnersList, contactSettings] = await Promise.all([
+    getContentBlocks("about"),
+    getPartners(),
+    getSettings("contact"),
+  ]);
+
+  const storyBlock = content.byKey.story;
   const values = [
     {
       title: "Authentic Hardware Only",
@@ -25,8 +42,11 @@ export default function AboutPage() {
     },
   ];
 
+  const phones = (contactSettings?.phones as string[]) || ["+44 7448 670925"];
+  const emails = (contactSettings?.emails as string[]) || ["sales@mifaretech.co.uk"];
+
   return (
-    <div className="flex flex-col gap-24 sm:gap-32 pb-20">
+    <div className="flex flex-col gap-24 sm:gap-32 pb-20 overflow-x-hidden">
       {/* 1. Header & Headline */}
       <section className="pt-12 sm:pt-20 lg:pt-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,25 +81,16 @@ export default function AboutPage() {
               Our Heritage &amp; Mission
             </span>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
-              From hardware distribution to full counter automation
+              {storyBlock?.title || "From hardware distribution to full counter automation"}
             </h2>
-            <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-              <p>
-                Modern retail and hospitality businesses cannot afford checkout downtime. A slow
-                printer or an unresponsive touch panel frustrates customers and causes lost revenue.
-              </p>
-              <p>
-                Mifaretech was established to provide retailers, franchise networks, and enterprise
-                operators with direct, authorized access to certified Fametech POS terminals and
-                automated peripherals, complete with on-the-ground technical training and rapid
-                warranty turnaround.
-              </p>
-              <p>
-                Operating with logistics reach across the UK and key African trade corridors, we
-                supply hardware built to withstand intense transaction volumes, power fluctuations,
-                and dust-heavy environments.
-              </p>
-            </div>
+            <div
+              className="space-y-4 text-sm text-muted-foreground leading-relaxed"
+              dangerouslySetInnerHTML={{
+                __html:
+                  storyBlock?.bodyHtml ||
+                  `<p>Modern retail and hospitality businesses cannot afford checkout downtime. A slow printer or an unresponsive touch panel frustrates customers and causes lost revenue.</p><p>Mifaretech was established to provide retailers, franchise networks, and enterprise operators with direct, authorized access to certified Fametech POS terminals and automated peripherals, complete with on-the-ground technical training and rapid warranty turnaround.</p><p>Operating with logistics reach across the UK and key African trade corridors, we supply hardware built to withstand intense transaction volumes, power fluctuations, and dust-heavy environments.</p>`,
+              }}
+            />
 
             <div className="pt-2 flex flex-wrap gap-4">
               <div className="p-4 rounded-2xl bg-secondary/50 border border-border flex items-center gap-3">
@@ -117,7 +128,34 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 3. Team Presentation Cards with Noho Hover Image Swap */}
+      {/* 3. Partners & Accreditations */}
+      {partnersList.length > 0 && (
+        <section className="border-y border-border py-12 bg-secondary/20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-xl mx-auto mb-8">
+              <span className="editorial-tag text-brand-700 dark:text-brand-300">
+                Accreditations
+              </span>
+              <h3 className="text-2xl font-bold tracking-tight">Direct Manufacturer Backing</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {partnersList.map((partner) => (
+                <div
+                  key={partner.id}
+                  className="p-6 rounded-2xl bg-card border border-border flex flex-col items-center text-center space-y-2"
+                >
+                  <span className="text-base font-black uppercase tracking-wider text-foreground">
+                    {partner.name}
+                  </span>
+                  <p className="text-xs text-accent font-bold">{partner.accreditationNote}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 4. Leadership & Technical Bench */}
       <section className="bg-secondary/30 py-20 border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-xl mx-auto mb-14">
@@ -134,7 +172,6 @@ export default function AboutPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Team Member 1 */}
             <div className="p-6 sm:p-8 rounded-3xl bg-card border border-border space-y-6 group">
               <div className="flex items-center gap-4">
                 <div className="relative size-20 rounded-2xl bg-brand-50 dark:bg-brand-900/60 border border-border overflow-hidden shrink-0">
@@ -158,7 +195,6 @@ export default function AboutPage() {
               </p>
             </div>
 
-            {/* Team Member 2 */}
             <div className="p-6 sm:p-8 rounded-3xl bg-card border border-border space-y-6 group">
               <div className="flex items-center gap-4">
                 <div className="relative size-20 rounded-2xl bg-accent-50 dark:bg-accent-900/40 border border-border overflow-hidden shrink-0">
@@ -187,7 +223,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 4. Core Values Grid */}
+      {/* 5. Core Values Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-center max-w-xl mx-auto mb-14">
           <span className="editorial-tag text-brand-700 dark:text-brand-300">
@@ -209,7 +245,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 5. Locations & Contact Link */}
+      {/* 6. Locations & Contact Link */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="p-8 sm:p-12 rounded-3xl bg-card border border-border grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-2">
@@ -220,7 +256,9 @@ export default function AboutPage() {
               <br />
               Registration &amp; Procurement Hub
               <br />
-              sales@mifaretech.co.uk
+              {emails[0]}
+              <br />
+              {phones[0]}
             </p>
           </div>
 
