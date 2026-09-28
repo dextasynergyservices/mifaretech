@@ -2,6 +2,8 @@ import type React from "react";
 import { Suspense } from "react";
 import { SmoothScrollProvider } from "@/components/motion/smooth-scroll";
 import { BackToTop } from "@/components/site/back-to-top";
+import { CompareFloatingDock } from "@/components/site/compare-floating-dock";
+import { MobileEnquiryBar } from "@/components/site/mobile-enquiry-bar";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { WhatsAppButton } from "@/components/site/whatsapp-button";
@@ -20,6 +22,10 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         <main className="flex-1 flex flex-col">{children}</main>
         <SiteFooter />
         <WhatsAppButton />
+        <Suspense fallback={null}>
+          <MobileEnquiryBar />
+        </Suspense>
+        <CompareFloatingDock />
         <BackToTop />
       </div>
     </SmoothScrollProvider>
