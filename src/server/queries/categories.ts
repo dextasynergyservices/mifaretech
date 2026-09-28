@@ -9,29 +9,33 @@ export async function getCategories() {
   cacheTag("categories");
   cacheLife("hours");
 
-  const results = await db.query.categories.findMany({
-    where: eq(categories.isActive, true),
-    orderBy: [asc(categories.sortOrder), asc(categories.name)],
-    with: {
-      cover: true,
-      products: {
-        where: (products, { eq }) => eq(products.status, "published"),
-        columns: {
-          id: true,
+  try {
+    const results = await db.query.categories.findMany({
+      where: eq(categories.isActive, true),
+      orderBy: [asc(categories.sortOrder), asc(categories.name)],
+      with: {
+        cover: true,
+        products: {
+          where: (products, { eq }) => eq(products.status, "published"),
+          columns: {
+            id: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  return results.map((cat) => ({
-    id: cat.id,
-    slug: cat.slug,
-    name: cat.name,
-    description: cat.description,
-    sortOrder: cat.sortOrder,
-    cover: cat.cover,
-    productCount: cat.products?.length ?? 0,
-  }));
+    return results.map((cat) => ({
+      id: cat.id,
+      slug: cat.slug,
+      name: cat.name,
+      description: cat.description,
+      sortOrder: cat.sortOrder,
+      cover: cat.cover,
+      productCount: cat.products?.length ?? 0,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 export async function getCategoryBySlug(slug: string) {
@@ -39,10 +43,14 @@ export async function getCategoryBySlug(slug: string) {
   cacheTag("categories", `category-${slug}`);
   cacheLife("hours");
 
-  return db.query.categories.findFirst({
-    where: eq(categories.slug, slug),
-    with: {
-      cover: true,
-    },
-  });
+  try {
+    return await db.query.categories.findFirst({
+      where: eq(categories.slug, slug),
+      with: {
+        cover: true,
+      },
+    });
+  } catch {
+    return null;
+  }
 }

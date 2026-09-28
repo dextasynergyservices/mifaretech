@@ -19,21 +19,28 @@ export async function getContentBlocks(page: (typeof sitePage.enumValues)[number
   cacheTag("content-blocks", `content-blocks-${page}`);
   cacheLife("hours");
 
-  const blocks = await db.query.contentBlocks.findMany({
-    where: and(eq(contentBlocks.page, page), eq(contentBlocks.isPublished, true)),
-    orderBy: [asc(contentBlocks.sortOrder)],
-  });
+  try {
+    const blocks = await db.query.contentBlocks.findMany({
+      where: and(eq(contentBlocks.page, page), eq(contentBlocks.isPublished, true)),
+      orderBy: [asc(contentBlocks.sortOrder)],
+    });
 
-  // Map into a key-accessible record as well as array
-  const byKey: Record<string, (typeof blocks)[number]> = {};
-  for (const b of blocks) {
-    byKey[b.blockKey] = b;
+    // Map into a key-accessible record as well as array
+    const byKey: Record<string, (typeof blocks)[number]> = {};
+    for (const b of blocks) {
+      byKey[b.blockKey] = b;
+    }
+
+    return {
+      list: blocks,
+      byKey,
+    };
+  } catch {
+    return {
+      list: [],
+      byKey: {},
+    };
   }
-
-  return {
-    list: blocks,
-    byKey,
-  };
 }
 
 export async function getSettings(key?: string) {
@@ -41,19 +48,23 @@ export async function getSettings(key?: string) {
   cacheTag("site-settings", key ? `site-settings-${key}` : "site-settings-all");
   cacheLife("hours");
 
-  if (key) {
-    const setting = await db.query.siteSettings.findFirst({
-      where: eq(siteSettings.key, key),
-    });
-    return setting?.value as Record<string, unknown> | null;
-  }
+  try {
+    if (key) {
+      const setting = await db.query.siteSettings.findFirst({
+        where: eq(siteSettings.key, key),
+      });
+      return setting?.value as Record<string, unknown> | null;
+    }
 
-  const all = await db.query.siteSettings.findMany();
-  const result: Record<string, Record<string, unknown>> = {};
-  for (const s of all) {
-    result[s.key] = s.value;
+    const all = await db.query.siteSettings.findMany();
+    const result: Record<string, Record<string, unknown>> = {};
+    for (const s of all) {
+      result[s.key] = s.value;
+    }
+    return result;
+  } catch {
+    return null;
   }
-  return result;
 }
 
 export async function getSolutions(kind?: (typeof solutionKind.enumValues)[number]) {
@@ -61,15 +72,19 @@ export async function getSolutions(kind?: (typeof solutionKind.enumValues)[numbe
   cacheTag("solutions", kind ? `solutions-${kind}` : "solutions-all");
   cacheLife("hours");
 
-  const conditions = [eq(solutions.isPublished, true)];
-  if (kind) {
-    conditions.push(eq(solutions.kind, kind));
-  }
+  try {
+    const conditions = [eq(solutions.isPublished, true)];
+    if (kind) {
+      conditions.push(eq(solutions.kind, kind));
+    }
 
-  return db.query.solutions.findMany({
-    where: and(...conditions),
-    orderBy: [asc(solutions.sortOrder)],
-  });
+    return await db.query.solutions.findMany({
+      where: and(...conditions),
+      orderBy: [asc(solutions.sortOrder)],
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getFaqs() {
@@ -77,10 +92,14 @@ export async function getFaqs() {
   cacheTag("faqs");
   cacheLife("hours");
 
-  return db.query.faqs.findMany({
-    where: eq(faqs.isPublished, true),
-    orderBy: [asc(faqs.sortOrder)],
-  });
+  try {
+    return await db.query.faqs.findMany({
+      where: eq(faqs.isPublished, true),
+      orderBy: [asc(faqs.sortOrder)],
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getTestimonials() {
@@ -88,10 +107,14 @@ export async function getTestimonials() {
   cacheTag("testimonials");
   cacheLife("hours");
 
-  return db.query.testimonials.findMany({
-    where: eq(testimonials.isPublished, true),
-    orderBy: [asc(testimonials.sortOrder)],
-  });
+  try {
+    return await db.query.testimonials.findMany({
+      where: eq(testimonials.isPublished, true),
+      orderBy: [asc(testimonials.sortOrder)],
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getPartners() {
@@ -99,10 +122,14 @@ export async function getPartners() {
   cacheTag("partners");
   cacheLife("hours");
 
-  return db.query.partners.findMany({
-    where: eq(partners.isPublished, true),
-    orderBy: [asc(partners.sortOrder)],
-  });
+  try {
+    return await db.query.partners.findMany({
+      where: eq(partners.isPublished, true),
+      orderBy: [asc(partners.sortOrder)],
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function getPageSeo(page: (typeof sitePage.enumValues)[number]) {
@@ -110,7 +137,11 @@ export async function getPageSeo(page: (typeof sitePage.enumValues)[number]) {
   cacheTag("page-seo", `page-seo-${page}`);
   cacheLife("hours");
 
-  return db.query.pageSeo.findFirst({
-    where: eq(pageSeo.page, page),
-  });
+  try {
+    return await db.query.pageSeo.findFirst({
+      where: eq(pageSeo.page, page),
+    });
+  } catch {
+    return null;
+  }
 }
