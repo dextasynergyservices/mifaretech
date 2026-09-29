@@ -83,16 +83,28 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
-  // 3. Per-request Nonce & Content Security Policy (CSP)
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  // 3. Content Security Policy (CSP) & Security Headers
+  const scriptSrc = [
+    "'self'",
+    "'unsafe-inline'",
+    "'unsafe-eval'",
+    "https://www.google.com/recaptcha/",
+    "https://www.gstatic.com/recaptcha/",
+    "https://va.vercel-scripts.com",
+  ].join(" ");
 
-  const scriptSrc = isDev
-    ? `'self' 'nonce-${nonce}' 'unsafe-eval' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/`
-    : `'self' 'nonce-${nonce}' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/`;
-
-  const connectSrc = isDev
-    ? `'self' https://www.google.com https://vitals.vercel-insights.com https://api.cloudinary.com ws: wss:`
-    : `'self' https://www.google.com https://vitals.vercel-insights.com https://api.cloudinary.com`;
+  const connectSrc = [
+    "'self'",
+    "https://www.google.com",
+    "https://recaptcha.google.com",
+    "https://vitals.vercel-insights.com",
+    "https://*.vercel-insights.com",
+    "https://*.vercel-analytics.com",
+    "https://api.cloudinary.com",
+    "https://res.cloudinary.com",
+    "ws:",
+    "wss:",
+  ].join(" ");
 
   const csp = [
     "default-src 'self'",
@@ -101,7 +113,7 @@ export function proxy(request: NextRequest) {
     "img-src 'self' data: https: blob:",
     "frame-src https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/",
     `connect-src ${connectSrc}`,
-    "font-src 'self' data:",
+    "font-src 'self' data: https:",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -110,7 +122,6 @@ export function proxy(request: NextRequest) {
   ].join("; ");
 
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("Content-Security-Policy", csp);
 
   const response = NextResponse.next({
@@ -119,9 +130,8 @@ export function proxy(request: NextRequest) {
     },
   });
 
-  // Attach dynamic CSP with nonce and robust HTTP security headers
+  // Attach dynamic CSP and robust HTTP security headers
   response.headers.set("Content-Security-Policy", csp);
-  response.headers.set("x-nonce", nonce);
   response.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
