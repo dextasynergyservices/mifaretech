@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://mifaretech.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mifaretech.co.uk";
 const DEFAULT_TITLE = "Mifaretech | ...lean forward smartly!";
 const DEFAULT_DESCRIPTION =
   "Mifaretech System Solutions — Accredited distributor of Fametech POS terminals, thermal receipt printers, barcode scanners, and retail infrastructure. Non-stop commercial reliability.";

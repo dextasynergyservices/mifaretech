@@ -72,6 +72,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@better-auth/cli": "1.4.21",
     "@biomejs/biome": "2.5.14",
     "@playwright/test": "1.63.0",
@@ -96,5 +97,10 @@
     "lefthook",
     "sharp",
     "unrs-resolver"
-  ]
+  ],
+  "overrides": {
+    "better-auth": "1.7.6",
+    "drizzle-orm": "0.45.3",
+    "lodash": "^4.17.21"
+  }
 }

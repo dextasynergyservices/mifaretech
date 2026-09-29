@@ -28,8 +28,8 @@ export function WhatsAppButton({
       className={cn(
         "inline-flex items-center gap-2 rounded-full font-bold transition-all shadow-md active:scale-95",
         floating
-          ? "fixed bottom-6 left-6 z-40 px-4 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-white hover:shadow-lg sm:hidden"
-          : "px-4 py-2 bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs uppercase tracking-wider",
+          ? "fixed bottom-6 left-6 z-40 px-4 py-3 bg-[#25D366] hover:bg-[#20bd5a] text-[#052e16] hover:shadow-lg sm:hidden font-extrabold"
+          : "px-4 py-2 bg-[#25D366] hover:bg-[#20bd5a] text-[#052e16] text-xs uppercase tracking-wider font-extrabold",
         className,
       )}
       aria-label="Chat with Mifaretech on WhatsApp"

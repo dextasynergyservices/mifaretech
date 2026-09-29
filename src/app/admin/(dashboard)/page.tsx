@@ -1,8 +1,11 @@
+import { sql } from "drizzle-orm";
 import {
   ArrowRight,
-  Briefcase,
+  BarChart3,
   Inbox,
+  Layers,
   Monitor,
+  Package,
   Plus,
   ShieldAlert,
   ShieldCheck,
@@ -26,21 +29,80 @@ export default async function AdminDashboardOverviewPage() {
     totalUsers,
     recentEnquiries,
     currentUserRecord,
+    weeklyEnquiriesRes,
+    topProductsRes,
+    statusBreakdownRes,
+    sourceBreakdownRes,
   ] = await Promise.all([
-    db.$count(schema.products),
-    db.$count(schema.categories),
-    db.$count(schema.enquiries),
-    db.$count(schema.user),
-    db.query.enquiries.findMany({
-      orderBy: (enquiries, { desc }) => [desc(enquiries.createdAt)],
-      limit: 5,
-    }),
-    db.query.user.findFirst({
-      where: (user, { eq }) => eq(user.id, session.user.id),
-    }),
+    db.$count(schema.products).catch(() => 0),
+    db.$count(schema.categories).catch(() => 0),
+    db.$count(schema.enquiries).catch(() => 0),
+    db.$count(schema.user).catch(() => 0),
+    db.query.enquiries
+      .findMany({
+        orderBy: (enquiries, { desc }) => [desc(enquiries.createdAt)],
+        limit: 5,
+      })
+      .catch(() => []),
+    db.query.user
+      .findFirst({
+        where: (user, { eq }) => eq(user.id, session.user.id),
+      })
+      .catch(() => null),
+    // Weekly inquiries aggregate
+    db
+      .execute<{ week_label: string; count: number }>(sql`
+        SELECT to_char(date_trunc('week', created_at), 'DD Mon') as week_label, count(*)::int as count
+        FROM enquiries
+        WHERE created_at > now() - interval '8 weeks'
+        GROUP BY date_trunc('week', created_at)
+        ORDER BY date_trunc('week', created_at) asc
+      `)
+      .catch(() => ({ rows: [] })),
+    // Top requested products
+    db
+      .execute<{ product_name: string; request_count: number; total_units: number }>(sql`
+        SELECT product_name, count(*)::int as request_count, coalesce(sum(quantity), 0)::int as total_units
+        FROM enquiry_items
+        GROUP BY product_name
+        ORDER BY request_count desc
+        LIMIT 5
+      `)
+      .catch(() => ({ rows: [] })),
+    // Status breakdown
+    db
+      .execute<{ status: string; count: number }>(sql`
+        SELECT status, count(*)::int as count
+        FROM enquiries
+        GROUP BY status
+      `)
+      .catch(() => ({ rows: [] })),
+    // Source breakdown
+    db
+      .execute<{ source: string; count: number }>(sql`
+        SELECT source, count(*)::int as count
+        FROM enquiries
+        GROUP BY source
+      `)
+      .catch(() => ({ rows: [] })),
   ]);
 
   const has2FA = currentUserRecord?.twoFactorEnabled ?? false;
+
+  const weeklyRows =
+    (weeklyEnquiriesRes as { rows: { week_label: string; count: number }[] }).rows || [];
+  const topProducts =
+    (
+      topProductsRes as {
+        rows: { product_name: string; request_count: number; total_units: number }[];
+      }
+    ).rows || [];
+  const statusRows =
+    (statusBreakdownRes as { rows: { status: string; count: number }[] }).rows || [];
+  const sourceRows =
+    (sourceBreakdownRes as { rows: { source: string; count: number }[] }).rows || [];
+
+  const maxWeeklyCount = Math.max(...weeklyRows.map((r) => Number(r.count)), 1);
 
   return (
     <div className="space-y-8">
@@ -66,14 +128,14 @@ export default async function AdminDashboardOverviewPage() {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-900 text-white dark:bg-brand-500 dark:text-white font-bold text-xs uppercase tracking-wider hover:bg-brand-800 transition-all shadow-xs"
           >
             <Plus className="size-3.5" />
-            <span>New Product</span>
+            <span>New Hardware</span>
           </Link>
           <Link
             href="/admin/enquiries"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card hover:bg-secondary text-foreground font-bold text-xs uppercase tracking-wider transition-all"
           >
             <Inbox className="size-3.5" />
-            <span>View Enquiries</span>
+            <span>Enquiry Inbox</span>
           </Link>
         </div>
       </div>
@@ -147,7 +209,7 @@ export default async function AdminDashboardOverviewPage() {
           <div className="flex items-center justify-between text-muted-foreground">
             <span className="text-xs font-semibold">Categories</span>
             <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-              <Briefcase className="size-4" />
+              <Layers className="size-4" />
             </div>
           </div>
           <div>
@@ -179,7 +241,153 @@ export default async function AdminDashboardOverviewPage() {
         </div>
       </div>
 
-      {/* 3. Recent Inbound Enquiries Preview */}
+      {/* 3. Insights Analytics Section (SQL Aggregates) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Weekly Enquiries Bar Chart */}
+        <div className="lg:col-span-7 p-6 rounded-3xl bg-card border border-border/80 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <BarChart3 className="size-4 text-brand-600 dark:text-brand-400" />
+                <span>Inbound Enquiries Velocity</span>
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Weekly enquiry volume across the past 8 weeks.
+              </p>
+            </div>
+            <span className="text-xs font-bold text-muted-foreground font-mono">
+              {weeklyRows.reduce((acc, r) => acc + Number(r.count), 0)} leads
+            </span>
+          </div>
+
+          {weeklyRows.length === 0 ? (
+            <div className="h-44 flex flex-col items-center justify-center text-xs text-muted-foreground bg-muted/20 rounded-2xl border border-dashed border-border/60">
+              <span>No weekly aggregate data available yet</span>
+            </div>
+          ) : (
+            <div className="h-44 flex items-end gap-3 pt-6 pb-2 px-2">
+              {weeklyRows.map((row, idx) => {
+                const heightPct = Math.round((Number(row.count) / maxWeeklyCount) * 100);
+                return (
+                  <div
+                    key={idx}
+                    className="flex-1 flex flex-col items-center gap-2 h-full justify-end group"
+                  >
+                    <span className="text-[10px] font-mono font-bold text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                      {row.count}
+                    </span>
+                    <div
+                      style={{ height: `${Math.max(heightPct, 8)}%` }}
+                      className="w-full rounded-t-lg bg-brand-500/80 group-hover:bg-brand-600 transition-all"
+                    />
+                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                      {row.week_label}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Top-Requested Hardware Leaderboard */}
+        <div className="lg:col-span-5 p-6 rounded-3xl bg-card border border-border/80 shadow-xs space-y-4">
+          <div>
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <Package className="size-4 text-emerald-600 dark:text-emerald-400" />
+              <span>Top-Requested Hardware</span>
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Most requested hardware models across client quotation baskets.
+            </p>
+          </div>
+
+          {topProducts.length === 0 ? (
+            <div className="p-8 text-center text-xs text-muted-foreground">
+              No product enquiry data collected yet.
+            </div>
+          ) : (
+            <div className="divide-y divide-border/60">
+              {topProducts.map((p, idx) => (
+                <div key={idx} className="py-2.5 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-mono text-[10px] font-bold text-muted-foreground">
+                      #{idx + 1}
+                    </span>
+                    <span className="font-bold text-foreground truncate">{p.product_name}</span>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="font-mono font-bold text-brand-600 dark:text-brand-400">
+                      {p.request_count} quotes
+                    </span>
+                    <span className="text-[10px] text-muted-foreground block">
+                      ({p.total_units} units)
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 4. Pipeline & Source Breakdown Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Status Pipeline Breakdown */}
+        <div className="p-6 rounded-3xl bg-card border border-border/80 shadow-xs space-y-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Enquiry Pipeline Status Breakdown
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            {["new", "in_progress", "quoted", "won", "lost", "spam"].map((st) => {
+              const row = statusRows.find((r) => r.status === st);
+              const countVal = row ? Number(row.count) : 0;
+              return (
+                <div
+                  key={st}
+                  className="p-3 rounded-xl bg-muted/30 border border-border/60 space-y-1"
+                >
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground block">
+                    {st.replace("_", " ")}
+                  </span>
+                  <span className="text-lg font-black text-foreground">{countVal}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Acquisition Source Breakdown */}
+        <div className="p-6 rounded-3xl bg-card border border-border/80 shadow-xs space-y-3">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Acquisition Source Breakdown
+          </h3>
+          <div className="grid grid-cols-2 gap-2.5">
+            {[
+              { key: "contact_form", label: "Contact Form" },
+              { key: "catalogue", label: "Catalogue Basket" },
+              { key: "product_page", label: "Product Page" },
+              { key: "quiz", label: "POS Quiz Advisor" },
+            ].map((src) => {
+              const row = sourceRows.find((r) => r.source === src.key);
+              const countVal = row ? Number(row.count) : 0;
+              return (
+                <div
+                  key={src.key}
+                  className="p-3 rounded-xl bg-muted/30 border border-border/60 space-y-1"
+                >
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground block truncate">
+                    {src.label}
+                  </span>
+                  <span className="text-lg font-black text-foreground">{countVal}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Recent Inbound Enquiries Preview */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
