@@ -74,9 +74,12 @@ export function constructMetadata({
           follow: true,
         },
     icons: {
-      icon: [{ url: "/logo.png", type: "image/png" }],
-      shortcut: "/logo.png",
-      apple: "/logo.png",
+      icon: [
+        { url: "/favicon.ico", sizes: "any" },
+        { url: "/icon.png", type: "image/png", sizes: "512x512" },
+      ],
+      shortcut: "/favicon.ico",
+      apple: "/apple-icon.png",
     },
   };
 }

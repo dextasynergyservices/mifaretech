@@ -19,10 +19,10 @@ export const env = createEnv({
     CRON_SECRET: z.string().min(16),
   },
   client: {
-    NEXT_PUBLIC_SITE_URL: z.url(),
-    NEXT_PUBLIC_RECAPTCHA_SITE_KEY: z.string().min(10),
-    NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().min(8), // digits only, with country code
-    NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().min(1),
+    NEXT_PUBLIC_SITE_URL: z.string().url().default("https://mifaretech.vercel.app"),
+    NEXT_PUBLIC_RECAPTCHA_SITE_KEY: z.string().default("6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"),
+    NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().default("447448670925"), // digits only, with country code
+    NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().default("mifaretech"),
   },
   experimental__runtimeEnv: {
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
