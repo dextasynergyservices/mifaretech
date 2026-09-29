@@ -6,9 +6,26 @@ import Link from "next/link";
 import type React from "react";
 import { useState } from "react";
 
-export function SiteFooter() {
+interface SiteFooterProps {
+  contactSettings?: Record<string, unknown> | null;
+  whatsappSettings?: Record<string, unknown> | null;
+}
+
+export function SiteFooter({ contactSettings, whatsappSettings }: SiteFooterProps = {}) {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+
+  const phones = (contactSettings?.phones as string[]) || ["+44 7448 670925"];
+  const emails = (contactSettings?.emails as string[]) || [
+    "sales@mifaretech.co.uk",
+    "support@mifaretech.co.uk",
+  ];
+  const hours = (contactSettings?.hours as string) || "Mon – Fri: 08:30 – 17:30 GMT";
+  const address = (contactSettings?.address as string) || "UK Nationwide & West Africa Hubs";
+
+  const waRawNumber =
+    (whatsappSettings?.number as string)?.replace(/[^0-9]/g, "") || "447448670925";
+  const waDisplayNumber = (whatsappSettings?.number as string) || "+44 7448 670925";
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -72,9 +89,18 @@ export function SiteFooter() {
         </div>
 
         {/* Noho-style Massive Editorial Tagline Display — Positioned just below Hardware Bulletin & Solutions and just on top of main footer */}
-        <div className="py-8 sm:py-12 text-center select-none overflow-hidden border-b border-border">
-          <p className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight text-neutral-200 dark:text-neutral-900 transition-colors">
-            Mifaretech <span className="text-accent font-black">...</span>lean forward smartly!
+        <div
+          className="py-8 sm:py-12 text-center select-none overflow-hidden border-b border-border"
+          aria-hidden="true"
+          role="presentation"
+        >
+          <p
+            role="presentation"
+            aria-hidden="true"
+            className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight text-neutral-500 dark:text-neutral-500 transition-colors"
+          >
+            Mifaretech <span className="text-accent-700 dark:text-accent-400 font-black">...</span>
+            lean forward smartly!
           </p>
         </div>
 
@@ -106,13 +132,13 @@ export function SiteFooter() {
             </p>
             <div className="pt-2">
               <a
-                href="https://wa.me/447448670925"
+                href={`https://wa.me/${waRawNumber}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 text-xs font-bold text-brand-700 dark:text-brand-300 hover:underline"
               >
                 <MessageCircle className="size-4 text-emerald-500" />
-                <span>WhatsApp: +44 7448 670925</span>
+                <span>WhatsApp: {waDisplayNumber}</span>
               </a>
             </div>
           </div>
@@ -202,22 +228,35 @@ export function SiteFooter() {
             <div className="space-y-2 text-muted-foreground text-xs leading-relaxed">
               <p>
                 <strong className="text-foreground">Phone / WhatsApp:</strong>{" "}
-                <a href="tel:+447448670925" className="hover:underline text-foreground">
-                  +44 7448 670925
+                <a
+                  href={`tel:${phones[0]?.replace(/\s+/g, "") || "+447448670925"}`}
+                  className="hover:underline text-foreground"
+                >
+                  {phones[0] || "+44 7448 670925"}
                 </a>
               </p>
               <p>
-                <strong className="text-foreground">Email:</strong> sales@mifaretech.co.uk
+                <strong className="text-foreground">Email:</strong>{" "}
+                <a
+                  href={`mailto:${emails[0] || "sales@mifaretech.co.uk"}`}
+                  className="hover:underline text-foreground"
+                >
+                  {emails[0] || "sales@mifaretech.co.uk"}
+                </a>
+              </p>
+              {emails[1] && (
+                <p>
+                  <strong className="text-foreground">Support:</strong>{" "}
+                  <a href={`mailto:${emails[1]}`} className="hover:underline text-foreground">
+                    {emails[1]}
+                  </a>
+                </p>
+              )}
+              <p>
+                <strong className="text-foreground">Hours:</strong> {hours}
               </p>
               <p>
-                <strong className="text-foreground">Support:</strong> support@mifaretech.co.uk
-              </p>
-              <p>
-                <strong className="text-foreground">Hours:</strong> Mon – Fri: 08:30 – 17:30 GMT
-              </p>
-              <p>
-                <strong className="text-foreground">Dispatch:</strong> UK Nationwide & West Africa
-                Hubs
+                <strong className="text-foreground">Dispatch:</strong> {address}
               </p>
             </div>
           </div>

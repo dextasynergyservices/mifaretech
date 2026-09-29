@@ -144,6 +144,10 @@
   h6 {
     @apply font-heading tracking-tight text-foreground;
   }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 }
 
 /* Noho-style editorial classes */

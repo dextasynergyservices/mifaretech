@@ -109,7 +109,7 @@ export default async function SolutionsPage() {
                 <div className="pt-4 border-t border-border/80">
                   <Link
                     href={`/contact?industry=${encodeURIComponent(item.title)}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:underline"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-accent-700 dark:text-accent-400 hover:underline"
                   >
                     <span>Request industry setup</span>
                     <ArrowRight className="size-3.5" />

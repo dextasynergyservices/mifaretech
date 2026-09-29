@@ -68,8 +68,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <NuqsAdapter>
       <NextThemesProvider
         attribute="class"
-        defaultTheme="system"
-        enableSystem
+        defaultTheme="light"
+        enableSystem={false}
+        storageKey="mifaretech-theme"
         disableTransitionOnChange
       >
         <MotionPreferenceContext.Provider value={{ isReducedMotion, toggleReducedMotion }}>
