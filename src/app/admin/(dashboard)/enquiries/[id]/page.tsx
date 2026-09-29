@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import {
   AlertCircle,
   ArrowLeft,
@@ -14,6 +14,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 import { requireRole } from "@/lib/session";
+import { EnquiryWorkflow } from "./enquiry-workflow";
 import { ResendNotificationButton } from "./resend-notification-button";
 
 export const instant = false;
@@ -32,10 +33,54 @@ export default async function EnquiryDetailPage({ params }: EnquiryDetailPagePro
     notFound();
   }
 
-  const items = await db
-    .select()
-    .from(schema.enquiryItems)
-    .where(eq(schema.enquiryItems.enquiryId, id));
+  const [items, staffUsers, rawNotes, rawHistory] = await Promise.all([
+    db.select().from(schema.enquiryItems).where(eq(schema.enquiryItems.enquiryId, id)),
+    db
+      .select({
+        id: schema.user.id,
+        name: schema.user.name,
+        email: schema.user.email,
+      })
+      .from(schema.user),
+    db
+      .select({
+        id: schema.enquiryNotes.id,
+        body: schema.enquiryNotes.body,
+        createdAt: schema.enquiryNotes.createdAt,
+        authorId: schema.enquiryNotes.authorId,
+      })
+      .from(schema.enquiryNotes)
+      .where(eq(schema.enquiryNotes.enquiryId, id))
+      .orderBy(desc(schema.enquiryNotes.createdAt)),
+    db
+      .select({
+        id: schema.enquiryStatusHistory.id,
+        fromStatus: schema.enquiryStatusHistory.fromStatus,
+        toStatus: schema.enquiryStatusHistory.toStatus,
+        changedBy: schema.enquiryStatusHistory.changedBy,
+        createdAt: schema.enquiryStatusHistory.createdAt,
+      })
+      .from(schema.enquiryStatusHistory)
+      .where(eq(schema.enquiryStatusHistory.enquiryId, id))
+      .orderBy(desc(schema.enquiryStatusHistory.createdAt)),
+  ]);
+
+  const userMap = new Map(staffUsers.map((u) => [u.id, u.name]));
+
+  const notes = rawNotes.map((n) => ({
+    id: n.id,
+    body: n.body,
+    createdAt: n.createdAt,
+    authorName: n.authorId ? userMap.get(n.authorId) || "Staff" : "Staff",
+  }));
+
+  const statusHistory = rawHistory.map((h) => ({
+    id: h.id,
+    fromStatus: h.fromStatus,
+    toStatus: h.toStatus,
+    changedByName: h.changedBy ? userMap.get(h.changedBy) || "Staff" : "Staff",
+    createdAt: h.createdAt,
+  }));
 
   const whatsappDirect = enquiry.phone
     ? `https://wa.me/${enquiry.phone.replace(/[^0-9]/g, "")}?text=Hello%20${encodeURIComponent(
@@ -229,8 +274,18 @@ export default async function EnquiryDetailPage({ params }: EnquiryDetailPagePro
           )}
         </div>
 
-        {/* Right Column: Profile & Metadata */}
+        {/* Right Column: Workflow, Profile & Metadata */}
         <div className="space-y-6">
+          {/* Interactive Workflow: Status, Assignment & Notes */}
+          <EnquiryWorkflow
+            enquiryId={enquiry.id}
+            currentStatus={enquiry.status}
+            currentAssignedTo={enquiry.assignedTo}
+            staffUsers={staffUsers}
+            initialNotes={notes}
+            statusHistory={statusHistory}
+          />
+
           {/* Contact Details Card */}
           <div className="p-6 rounded-3xl bg-card border border-border shadow-xs space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">

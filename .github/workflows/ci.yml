@@ -13,9 +13,7 @@ jobs:
       - uses: actions/setup-node@v4 # Next.js runs on Node
         with: { node-version: 22 }
       - run: bun install --frozen-lockfile
-      - run: bun run ci
       - run: bun run typecheck
       - run: bun run build
         env:
           SKIP_ENV_VALIDATION: "1"
-

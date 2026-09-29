@@ -1,6 +1,6 @@
 "use server";
 
-import { createHmac, randomBytes } from "node:crypto";
+import { createHmac } from "node:crypto";
 import { and, count, eq, gt, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
@@ -16,6 +16,7 @@ import {
   sendEnquiryNotification,
   sendProductEnquiryNotification,
 } from "@/lib/email/send";
+import { generateReference } from "@/lib/reference";
 import { requireRole } from "@/lib/session";
 import { enquirySchema } from "@/server/validators/enquiry";
 
@@ -154,7 +155,7 @@ export async function submitEnquiry(rawInput: unknown): Promise<EnquirySubmitRes
   const productMap = new Map(foundProducts.map((p) => [p.id, p]));
 
   const enquiryId = crypto.randomUUID();
-  const reference = `MFT-${randomBytes(4).toString("hex").toUpperCase()}`;
+  const reference = generateReference();
 
   const insertEnquiryQuery = db.insert(schema.enquiries).values({
     id: enquiryId,
@@ -353,7 +354,7 @@ const productEnquirySchema = z.object({
 export async function submitProductEnquiryAction(rawInput: unknown) {
   try {
     const input = productEnquirySchema.parse(rawInput);
-    const reference = `MFT-${randomBytes(4).toString("hex").toUpperCase()}`;
+    const reference = generateReference();
 
     const [insertedEnquiry] = await db
       .insert(schema.enquiries)
@@ -420,4 +421,180 @@ export async function submitProductEnquiryAction(rawInput: unknown) {
       error: "An unexpected error occurred while submitting your enquiry. Please try again.",
     };
   }
+}
+
+const updateStatusSchema = z.object({
+  enquiryId: z.string().uuid(),
+  status: z.enum(["new", "in_progress", "quoted", "won", "lost", "spam"]),
+});
+
+export async function updateEnquiryStatusAction(rawInput: unknown) {
+  const session = await requireRole(["admin", "editor"]);
+  const { enquiryId, status } = updateStatusSchema.parse(rawInput);
+
+  const [current] = await db
+    .select({
+      id: schema.enquiries.id,
+      status: schema.enquiries.status,
+      firstResponseAt: schema.enquiries.firstResponseAt,
+    })
+    .from(schema.enquiries)
+    .where(eq(schema.enquiries.id, enquiryId));
+
+  if (!current) {
+    return { success: false, error: "Enquiry not found" };
+  }
+
+  const fromStatus = current.status;
+
+  await db
+    .update(schema.enquiries)
+    .set({
+      status,
+      firstResponseAt: current.firstResponseAt || (status !== "new" ? new Date() : null),
+      closedAt: ["won", "lost", "spam"].includes(status) ? new Date() : null,
+    })
+    .where(eq(schema.enquiries.id, enquiryId));
+
+  await db.insert(schema.enquiryStatusHistory).values({
+    enquiryId,
+    fromStatus,
+    toStatus: status,
+    changedBy: session.user.id,
+  });
+
+  const { logAuditEvent } = await import("@/lib/audit");
+  await logAuditEvent({
+    actorId: session.user.id,
+    action: "enquiry.status_change",
+    entityType: "enquiry",
+    entityId: enquiryId,
+    metadata: { fromStatus, toStatus: status },
+  });
+
+  revalidatePath("/admin/enquiries");
+  revalidatePath(`/admin/enquiries/${enquiryId}`);
+  revalidatePath("/admin");
+
+  return { success: true };
+}
+
+const assignSchema = z.object({
+  enquiryId: z.string().uuid(),
+  assignedTo: z.string().nullable(),
+});
+
+export async function assignEnquiryAction(rawInput: unknown) {
+  const session = await requireRole(["admin", "editor"]);
+  const { enquiryId, assignedTo } = assignSchema.parse(rawInput);
+
+  await db
+    .update(schema.enquiries)
+    .set({
+      assignedTo: assignedTo || null,
+    })
+    .where(eq(schema.enquiries.id, enquiryId));
+
+  const { logAuditEvent } = await import("@/lib/audit");
+  await logAuditEvent({
+    actorId: session.user.id,
+    action: "enquiry.assign",
+    entityType: "enquiry",
+    entityId: enquiryId,
+    metadata: { assignedTo },
+  });
+
+  revalidatePath("/admin/enquiries");
+  revalidatePath(`/admin/enquiries/${enquiryId}`);
+
+  return { success: true };
+}
+
+const addNoteSchema = z.object({
+  enquiryId: z.string().uuid(),
+  body: z.string().trim().min(1, "Note cannot be empty").max(2000),
+});
+
+export async function addEnquiryNoteAction(rawInput: unknown) {
+  const session = await requireRole(["admin", "editor"]);
+  const { enquiryId, body } = addNoteSchema.parse(rawInput);
+
+  const [inserted] = await db
+    .insert(schema.enquiryNotes)
+    .values({
+      enquiryId,
+      authorId: session.user.id,
+      body,
+    })
+    .returning();
+
+  const { logAuditEvent } = await import("@/lib/audit");
+  await logAuditEvent({
+    actorId: session.user.id,
+    action: "enquiry.note_add",
+    entityType: "enquiry",
+    entityId: enquiryId,
+    metadata: { noteLength: body.length },
+  });
+
+  revalidatePath(`/admin/enquiries/${enquiryId}`);
+
+  return { success: true, note: inserted };
+}
+
+export async function deleteEnquiryAction(id: string) {
+  const session = await requireRole(["admin", "editor"]);
+
+  const [deleted] = await db
+    .delete(schema.enquiries)
+    .where(eq(schema.enquiries.id, id))
+    .returning({ id: schema.enquiries.id, reference: schema.enquiries.reference });
+
+  if (!deleted) {
+    return { success: false, error: "Enquiry not found or already deleted." };
+  }
+
+  const { logAuditEvent } = await import("@/lib/audit");
+  await logAuditEvent({
+    actorId: session.user.id,
+    action: "enquiry.delete",
+    entityType: "enquiry",
+    entityId: id,
+    metadata: { reference: deleted.reference },
+  });
+
+  revalidatePath("/admin/enquiries");
+  revalidatePath("/admin");
+
+  return { success: true };
+}
+
+export async function bulkDeleteEnquiriesAction(ids: string[]) {
+  const session = await requireRole(["admin", "editor"]);
+
+  if (!ids || ids.length === 0) {
+    return { success: false, error: "No enquiries selected for deletion." };
+  }
+
+  const deleted = await db
+    .delete(schema.enquiries)
+    .where(inArray(schema.enquiries.id, ids))
+    .returning({ id: schema.enquiries.id, reference: schema.enquiries.reference });
+
+  if (deleted.length === 0) {
+    return { success: false, error: "No matching enquiries found to delete." };
+  }
+
+  const { logAuditEvent } = await import("@/lib/audit");
+  await logAuditEvent({
+    actorId: session.user.id,
+    action: "enquiry.bulk_delete",
+    entityType: "enquiry",
+    metadata: { count: deleted.length, ids: deleted.map((e) => e.id) },
+  });
+
+  revalidatePath("/admin/enquiries");
+  revalidatePath("/admin");
+
+  return { success: true, count: deleted.length };
 }

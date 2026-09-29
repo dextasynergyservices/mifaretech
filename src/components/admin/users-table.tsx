@@ -1,5 +1,4 @@
 "use client";
-
 import {
   AlertTriangle,
   Ban,
@@ -9,10 +8,14 @@ import {
   Shield,
   ShieldCheck,
   UserCheck,
+  UserCog,
   UserPlus,
 } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/admin/confirm-dialog";
+import { type TableActionItem, TableActionMenu } from "@/components/admin/table-action-menu";
+import { TablePagination } from "@/components/admin/table-pagination";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +52,13 @@ export function UsersTable({ initialUsers, currentUserId }: UsersTableProps) {
   const [isPending, startTransition] = useTransition();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "editor">("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, roleFilter]);
 
   // Dialog States
   const [isInviteOpen, setIsInviteOpen] = useState(false);
@@ -64,13 +74,24 @@ export function UsersTable({ initialUsers, currentUserId }: UsersTableProps) {
   const [banningUser, setBanningUser] = useState<StaffUserItem | null>(null);
   const [banReason, setBanReason] = useState("");
 
-  const filteredUsers = initialUsers.filter((u) => {
-    const matchesSearch =
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = roleFilter === "all" || u.role === roleFilter;
-    return matchesSearch && matchesRole;
-  });
+  // Revoke Dialog State
+  const [revokingUser, setRevokingUser] = useState<StaffUserItem | null>(null);
+
+  const filteredUsers = useMemo(() => {
+    return initialUsers.filter((u) => {
+      const matchesSearch =
+        u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesRole = roleFilter === "all" || u.role === roleFilter;
+      return matchesSearch && matchesRole;
+    });
+  }, [initialUsers, searchQuery, roleFilter]);
+
+  const totalPages = Math.ceil(filteredUsers.length / pageSize) || 1;
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredUsers.slice(start, start + pageSize);
+  }, [filteredUsers, currentPage, pageSize]);
 
   const handleInviteSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -240,8 +261,45 @@ export function UsersTable({ initialUsers, currentUserId }: UsersTableProps) {
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((user) => {
+                paginatedUsers.map((user) => {
                   const isSelf = user.id === currentUserId;
+
+                  const actionItems: TableActionItem[] = [];
+
+                  if (!isSelf) {
+                    actionItems.push({
+                      label: `Switch to ${user.role === "admin" ? "Editor" : "Admin"}`,
+                      icon: <UserCog className="size-3.5" />,
+                      onClick: () =>
+                        handleChangeRole(user.id, user.role === "admin" ? "editor" : "admin"),
+                    });
+
+                    if (user.banned) {
+                      actionItems.push({
+                        label: "Restore Account",
+                        icon: <UserCheck className="size-3.5" />,
+                        onClick: () => handleUnban(user.id),
+                      });
+                    } else {
+                      actionItems.push({
+                        label: "Suspend Account",
+                        icon: <Ban className="size-3.5" />,
+                        variant: "destructive",
+                        onClick: () => {
+                          setBanningUser(user);
+                          setBanReason("");
+                        },
+                      });
+                    }
+                  }
+
+                  actionItems.push({
+                    label: "Revoke Active Sessions",
+                    icon: <LogOut className="size-3.5" />,
+                    separatorBefore: !isSelf,
+                    onClick: () => setRevokingUser(user),
+                  });
+
                   return (
                     <tr key={user.id} className="hover:bg-secondary/30 transition-colors">
                       {/* Name & Email */}
@@ -314,63 +372,12 @@ export function UsersTable({ initialUsers, currentUserId }: UsersTableProps) {
                         {new Date(user.createdAt).toLocaleDateString()}
                       </td>
 
-                      {/* Actions */}
+                      {/* Actions Menu */}
                       <td className="py-4 px-4 text-right">
-                        <div className="inline-flex items-center gap-2 justify-end">
-                          {/* Role Toggle Button */}
-                          {!isSelf && (
-                            <button
-                              type="button"
-                              disabled={isPending}
-                              onClick={() =>
-                                handleChangeRole(
-                                  user.id,
-                                  user.role === "admin" ? "editor" : "admin",
-                                )
-                              }
-                              className="px-2.5 py-1 rounded-lg border border-border bg-card hover:bg-secondary text-[11px] font-semibold text-foreground transition-colors cursor-pointer disabled:opacity-50"
-                              title={`Switch role to ${user.role === "admin" ? "Editor" : "Admin"}`}
-                            >
-                              Make {user.role === "admin" ? "Editor" : "Admin"}
-                            </button>
-                          )}
-
-                          {/* Ban / Unban Button */}
-                          {!isSelf &&
-                            (user.banned ? (
-                              <button
-                                type="button"
-                                disabled={isPending}
-                                onClick={() => handleUnban(user.id)}
-                                className="px-2.5 py-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold transition-colors cursor-pointer"
-                              >
-                                Restore
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                disabled={isPending}
-                                onClick={() => {
-                                  setBanningUser(user);
-                                  setBanReason("");
-                                }}
-                                className="px-2.5 py-1 rounded-lg border border-destructive/20 bg-destructive/10 hover:bg-destructive/20 text-destructive text-[11px] font-bold transition-colors cursor-pointer"
-                              >
-                                Suspend
-                              </button>
-                            ))}
-
-                          {/* Revoke Sessions */}
-                          <button
-                            type="button"
-                            disabled={isPending}
-                            onClick={() => handleRevokeSessions(user.id, user.email)}
-                            className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
-                            title="Revoke active sessions"
-                          >
-                            <LogOut className="size-3.5" />
-                          </button>
-                        </div>
+                        <TableActionMenu
+                          ariaLabel={`Actions for ${user.name}`}
+                          items={actionItems}
+                        />
                       </td>
                     </tr>
                   );
@@ -379,6 +386,17 @@ export function UsersTable({ initialUsers, currentUserId }: UsersTableProps) {
             </tbody>
           </table>
         </div>
+
+        {filteredUsers.length > 0 && (
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredUsers.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+          />
+        )}
       </div>
 
       {/* 3. Invite Staff Modal Dialog */}
@@ -552,6 +570,28 @@ export function UsersTable({ initialUsers, currentUserId }: UsersTableProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Revoke Sessions Confirmation Dialog */}
+      <ConfirmDialog
+        open={Boolean(revokingUser)}
+        onOpenChange={(open) => !open && setRevokingUser(null)}
+        title="Revoke Active Sessions"
+        variant="warning"
+        description={
+          <>
+            Are you sure you want to revoke all active sessions for{" "}
+            <strong className="text-foreground">{revokingUser?.email}</strong>? The user will be
+            immediately signed out across all devices and required to log in again.
+          </>
+        }
+        confirmLabel="Revoke All Sessions"
+        isPending={isPending}
+        onConfirm={() => {
+          if (!revokingUser) return;
+          handleRevokeSessions(revokingUser.id, revokingUser.email);
+          setRevokingUser(null);
+        }}
+      />
     </div>
   );
 }

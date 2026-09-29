@@ -3,12 +3,19 @@ import { Suspense } from "react";
 import { SmoothScrollProvider } from "@/components/motion/smooth-scroll";
 import { BackToTop } from "@/components/site/back-to-top";
 import { CompareFloatingDock } from "@/components/site/compare-floating-dock";
+import { CookieConsentBanner } from "@/components/site/cookie-consent-banner";
 import { MobileEnquiryBar } from "@/components/site/mobile-enquiry-bar";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { WhatsAppButton } from "@/components/site/whatsapp-button";
+import { getSettings } from "@/server/queries";
 
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const [contactSettings, whatsappSettings] = await Promise.all([
+    getSettings("contact"),
+    getSettings("whatsapp"),
+  ]);
+
   return (
     <SmoothScrollProvider>
       <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -20,13 +27,14 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
           <SiteHeader />
         </Suspense>
         <main className="flex-1 flex flex-col">{children}</main>
-        <SiteFooter />
+        <SiteFooter contactSettings={contactSettings} whatsappSettings={whatsappSettings} />
         <WhatsAppButton />
         <Suspense fallback={null}>
           <MobileEnquiryBar />
         </Suspense>
         <CompareFloatingDock />
         <BackToTop />
+        <CookieConsentBanner />
       </div>
     </SmoothScrollProvider>
   );

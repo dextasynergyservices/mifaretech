@@ -4,6 +4,8 @@ import {
   ArrowLeft,
   Check,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Download,
   FileText,
   MessageSquareQuote,
@@ -45,27 +47,67 @@ interface ProductViewProps {
   related: RelatedProductItem[];
 }
 
+interface GalleryItem {
+  url: string;
+  alt: string;
+  isCover: boolean;
+  label: string;
+}
+
 export function ProductView({ product, related }: ProductViewProps) {
   const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Collect images: cover + gallery items
-  const galleryImages: string[] = [];
+  // Collect images: 1 Primary Cover + up to 4 supporting gallery items
+  const galleryImages: GalleryItem[] = [];
   if (product.cover?.secureUrl) {
-    galleryImages.push(product.cover.secureUrl);
+    galleryImages.push({
+      url: product.cover.secureUrl,
+      alt: product.cover.altText || `${product.name} - Primary Main Hardware View`,
+      isCover: true,
+      label: "Main View",
+    });
   }
   if (product.images && product.images.length > 0) {
+    let supportIndex = 1;
     for (const img of product.images) {
-      if (img.media?.secureUrl && !galleryImages.includes(img.media.secureUrl)) {
-        galleryImages.push(img.media.secureUrl);
+      if (img.media?.secureUrl && !galleryImages.some((g) => g.url === img.media.secureUrl)) {
+        galleryImages.push({
+          url: img.media.secureUrl,
+          alt: img.media.altText || `${product.name} - Supporting View ${supportIndex}`,
+          isCover: false,
+          label: `Supporting #${supportIndex}`,
+        });
+        supportIndex++;
       }
     }
   }
   if (galleryImages.length === 0) {
-    galleryImages.push("/logo.png");
+    galleryImages.push({
+      url: "/logo.png",
+      alt: product.name,
+      isCover: true,
+      label: "Overview",
+    });
   }
 
-  const [activeImage, setActiveImage] = useState<string>(galleryImages[0] ?? "/logo.png");
+  const fallbackImage: GalleryItem = {
+    url: "/logo.png",
+    alt: product.name,
+    isCover: true,
+    label: "Overview",
+  };
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeImage: GalleryItem = galleryImages[activeIndex] ?? galleryImages[0] ?? fallbackImage;
+
+  const handlePrevImage = () => {
+    setActiveIndex((prev) => (prev > 0 ? prev - 1 : galleryImages.length - 1));
+  };
+
+  const handleNextImage = () => {
+    setActiveIndex((prev) => (prev < galleryImages.length - 1 ? prev + 1 : 0));
+  };
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
@@ -92,49 +134,100 @@ export function ProductView({ product, related }: ProductViewProps) {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* Left Column: Visual Media Display */}
-          <div className="lg:col-span-6 space-y-6">
-            <div className="relative aspect-4/3 rounded-3xl bg-card border border-border flex items-center justify-center p-8 overflow-hidden group">
+          <div className="lg:col-span-6 space-y-4">
+            <div className="relative aspect-4/3 rounded-3xl bg-card border border-border flex items-center justify-center p-6 sm:p-8 overflow-hidden group select-none">
               <Image
-                src={activeImage}
-                alt={product.name}
+                src={activeImage.url}
+                alt={activeImage.alt}
                 width={500}
                 height={400}
                 priority
                 loading="eager"
                 className="object-contain max-h-full transition-transform duration-500 group-hover:scale-105"
               />
-              {product.category && (
-                <div className="absolute top-4 left-4">
+
+              {/* Category / Main Badge */}
+              <div className="absolute top-4 left-4 flex items-center gap-2">
+                {product.category && (
                   <span className="editorial-tag text-brand-700 dark:text-brand-300">
                     {product.category.name}
                   </span>
+                )}
+                {activeImage.isCover ? (
+                  <span className="text-[10px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-700 dark:text-brand-300 border border-brand-500/20">
+                    Primary
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border">
+                    {activeImage.label}
+                  </span>
+                )}
+              </div>
+
+              {/* Gallery Counter */}
+              {galleryImages.length > 1 && (
+                <div className="absolute top-4 right-4">
+                  <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-background/80 backdrop-blur-xs text-foreground border border-border shadow-xs">
+                    {activeIndex + 1} / {galleryImages.length}
+                  </span>
                 </div>
+              )}
+
+              {/* Prev / Next Navigation Arrows */}
+              {galleryImages.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrevImage}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 size-9 rounded-full bg-background/80 hover:bg-background border border-border shadow-sm flex items-center justify-center text-foreground opacity-80 hover:opacity-100 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                    aria-label="Previous product image"
+                  >
+                    <ChevronLeft className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextImage}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 size-9 rounded-full bg-background/80 hover:bg-background border border-border shadow-sm flex items-center justify-center text-foreground opacity-80 hover:opacity-100 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                    aria-label="Next product image"
+                  >
+                    <ChevronRight className="size-4" />
+                  </button>
+                </>
               )}
             </div>
 
-            {/* Gallery Thumbnails */}
+            {/* Gallery Thumbnails Strip (Main + up to 4 supporting images) */}
             {galleryImages.length > 1 && (
-              <div className="flex items-center gap-3">
-                {galleryImages.map((img) => (
-                  <button
-                    type="button"
-                    key={img}
-                    onClick={() => setActiveImage(img)}
-                    className={`size-20 rounded-2xl bg-card border-2 p-2 flex items-center justify-center overflow-hidden cursor-pointer transition-colors ${
-                      activeImage === img
-                        ? "border-brand-600"
-                        : "border-border hover:border-brand-500/50"
-                    }`}
-                  >
-                    <Image
-                      src={img}
-                      alt="Thumbnail"
-                      width={60}
-                      height={60}
-                      className="object-contain"
-                    />
-                  </button>
-                ))}
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2.5 overflow-x-auto pb-1 pt-0.5">
+                  {galleryImages.map((img, idx) => (
+                    <button
+                      type="button"
+                      key={`${img.url}-${idx}`}
+                      onClick={() => setActiveIndex(idx)}
+                      className={`relative size-20 sm:size-22 rounded-2xl bg-card border-2 p-2 flex items-center justify-center overflow-hidden cursor-pointer transition-all shrink-0 ${
+                        activeIndex === idx
+                          ? "border-brand-600 ring-2 ring-brand-500/20 scale-102 shadow-xs"
+                          : "border-border hover:border-brand-500/40 opacity-70 hover:opacity-100"
+                      }`}
+                      title={img.label}
+                    >
+                      <Image
+                        src={img.url}
+                        alt={img.alt}
+                        width={64}
+                        height={64}
+                        className="object-contain max-h-full"
+                      />
+                      <span className="absolute bottom-1 left-1 right-1 truncate text-[9px] font-mono font-bold px-1 py-0.5 rounded-sm bg-background/90 text-foreground border border-border/50 text-center">
+                        {img.isCover ? "Main" : `View ${idx}`}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] text-muted-foreground font-mono">
+                  Click any supporting image thumbnail to inspect angles &amp; ports.
+                </p>
               </div>
             )}
           </div>

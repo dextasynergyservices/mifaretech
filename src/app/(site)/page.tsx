@@ -2,7 +2,7 @@ import { ArrowRight, CheckCircle2, Headphones, ShieldCheck, Star, Wrench } from 
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Reveal, SplitLines } from "@/components/motion/reveal";
+import { Reveal } from "@/components/motion/reveal";
 import { CompareToggleButton } from "@/components/site/compare-toggle-button";
 import { EnquireButton } from "@/components/site/enquire-button";
 import { FaqAccordion } from "@/components/site/faq-accordion";
@@ -57,6 +57,106 @@ export default async function HomePage() {
     },
   ];
 
+  const DEFAULT_HERO_TILES = [
+    {
+      id: "tile-1",
+      title: "Mobile POS",
+      tag: "Mobile",
+      subtag: "M-POS",
+      href: "/catalogue/compact-mobile-pos-terminal",
+      mediaUrl: "/logo.png",
+      rotateClass: "rotate-[-1.5deg] hover:rotate-0",
+    },
+    {
+      id: "tile-2",
+      title: "Touch Terminal",
+      tag: "POS",
+      subtag: "1000",
+      href: "/catalogue/fametech-pos-1000",
+      mediaUrl: "/logo.png",
+      rotateClass: "rotate-[1deg] hover:rotate-0",
+    },
+    {
+      id: "tile-3",
+      title: "Omni Scanner",
+      tag: "Omni",
+      subtag: "CS-900",
+      href: "/catalogue/omnidirectional-countertop-scanner",
+      mediaUrl: "/logo.png",
+      rotateClass: "rotate-[1.5deg] hover:rotate-0",
+    },
+    {
+      id: "tile-4",
+      title: "Receipt Printer",
+      tag: "Print",
+      subtag: "300",
+      href: "/catalogue/heavy-duty-thermal-receipt-printer",
+      mediaUrl: "/logo.png",
+      rotateClass: "rotate-[-1deg] hover:rotate-0",
+    },
+    {
+      id: "tile-5",
+      title: "Receipt Printer",
+      tag: "Print",
+      subtag: "300",
+      href: "/catalogue/heavy-duty-thermal-receipt-printer",
+      mediaUrl: "/logo.png",
+      rotateClass: "rotate-[-1deg] hover:rotate-0",
+    },
+    {
+      id: "tile-6",
+      title: "Cash Drawer",
+      tag: "Safe",
+      subtag: "RJ11",
+      href: "/catalogue/heavy-duty-steel-cash-drawer",
+      mediaUrl: "/logo.png",
+      rotateClass: "rotate-[1deg] hover:rotate-0",
+    },
+    {
+      id: "tile-7",
+      title: "Interactive Kiosk",
+      tag: "Kiosk",
+      subtag: '21.5"',
+      href: "/catalogue/interactive-self-service-kiosk",
+      mediaUrl: "/logo.png",
+      rotateClass: "rotate-[-1.5deg] hover:rotate-0",
+    },
+    {
+      id: "tile-8",
+      title: "Customer Display",
+      tag: "Pole",
+      subtag: "VFD",
+      href: "/catalogue?category=pos-terminals",
+      mediaUrl: "/logo.png",
+      rotateClass: "rotate-[1.5deg] hover:rotate-0",
+    },
+  ];
+
+  const configuredTiles = (
+    heroBlock?.data as {
+      heroTiles?: Array<{
+        mediaId?: string | null;
+        mediaUrl?: string | null;
+        title?: string;
+        tag?: string;
+        subtag?: string;
+        href?: string;
+      }>;
+    }
+  )?.heroTiles;
+
+  const heroTiles = DEFAULT_HERO_TILES.map((defaultTile, idx) => {
+    const custom = configuredTiles?.[idx];
+    return {
+      ...defaultTile,
+      title: custom?.title || defaultTile.title,
+      tag: custom?.tag || defaultTile.tag,
+      subtag: custom?.subtag || defaultTile.subtag,
+      href: custom?.href || defaultTile.href,
+      mediaUrl: custom?.mediaUrl || defaultTile.mediaUrl,
+    };
+  });
+
   return (
     <div className="flex flex-col gap-24 sm:gap-32 pb-20 overflow-x-hidden">
       {/* 1. HERO SECTION */}
@@ -73,32 +173,17 @@ export default async function HomePage() {
                 </span>
               </div>
 
-              <div className="space-y-1">
-                <SplitLines
-                  lines={[
-                    <span
-                      key="1"
-                      className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight"
-                    >
-                      {heroBlock?.title || "We engineer hardware"}
-                    </span>,
-                    <span
-                      key="2"
-                      className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-brand-700 dark:text-brand-400"
-                    >
-                      for busy counters,
-                    </span>,
-                    <span
-                      key="3"
-                      className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight"
-                    >
-                      Mifaretech <span className="text-accent font-black">...</span>lean forward
-                      smartly!
-                    </span>,
-                  ]}
-                  lineClassName="pb-1"
-                />
-              </div>
+              <Reveal delay={0.1}>
+                <div className="space-y-2">
+                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.15] text-foreground">
+                    {heroBlock?.title || "We engineer hardware for busy counters"}
+                  </h1>
+                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-brand-700 dark:text-brand-400">
+                    Mifaretech <span className="text-accent font-black">...</span>lean forward
+                    smartly!
+                  </p>
+                </div>
+              </Reveal>
 
               <Reveal delay={0.2}>
                 <div
@@ -148,242 +233,116 @@ export default async function HomePage() {
               </Reveal>
             </div>
 
-            {/* Right Column: Noho-Style Scattered Hardware Tiles */}
+            {/* Right Column: Noho-Style Scattered Hardware Tiles (Up to 6 Images) */}
             <div className="lg:col-span-5 w-full">
               <Reveal delay={0.2} yOffset={20}>
                 <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 items-start">
-                  {/* Column 1 */}
+                  {/* Column 1 (3 tiles) */}
                   <div className="flex flex-col gap-2.5 sm:gap-3.5 pt-0">
-                    <Link
-                      href="/catalogue/compact-mobile-pos-terminal"
-                      className="hidden lg:flex group relative aspect-square w-full rounded-2xl bg-[#E8F3EB] dark:bg-[#16291e] p-3 flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[-1.5deg] hover:rotate-0"
-                      title="Mobile Handheld POS Terminal"
-                    >
-                      <div className="w-full flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
-                        <span>Mobile</span>
-                        <span className="text-emerald-600 dark:text-emerald-400">M-POS</span>
-                      </div>
-                      <div className="relative size-16 sm:size-20 lg:size-24 flex items-center justify-center">
+                    {heroTiles.slice(0, 3).map((tile) => (
+                      <Link
+                        key={tile.id}
+                        href={tile.href || "/catalogue"}
+                        className={`group relative aspect-square w-full rounded-2xl overflow-hidden border border-border/80 bg-secondary/20 shadow-xs transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${tile.rotateClass}`}
+                        title={tile.title}
+                      >
                         <Image
-                          src="/logo.png"
-                          alt="Mobile Handheld Terminal"
+                          src={tile.mediaUrl || "/logo.png"}
+                          alt={tile.title}
                           fill
-                          sizes="120px"
+                          sizes="(max-width: 768px) 33vw, 20vw"
                           priority
                           loading="eager"
-                          className="object-contain transition-transform duration-500 group-hover:scale-110"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                      </div>
-                      <span className="text-[10px] font-bold text-foreground line-clamp-1 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
-                        Mobile POS
-                      </span>
-                    </Link>
-
-                    <Link
-                      href="/catalogue/fametech-pos-1000"
-                      className="group relative aspect-square w-full rounded-2xl bg-[#F5EFE6] dark:bg-[#18233c] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[1deg] hover:rotate-0"
-                      title="Enterprise Touch POS Terminal"
-                    >
-                      <div className="w-full flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
-                        <span>POS</span>
-                        <span className="text-emerald-600 dark:text-emerald-400">1000</span>
-                      </div>
-                      <div className="relative size-16 sm:size-20 lg:size-24 flex items-center justify-center">
-                        <Image
-                          src="/logo.png"
-                          alt="Touch POS Terminal"
-                          fill
-                          sizes="120px"
-                          priority
-                          loading="eager"
-                          className="object-contain transition-transform duration-500 group-hover:scale-110"
-                        />
-                      </div>
-                      <span className="text-[10px] font-bold text-foreground line-clamp-1 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
-                        Terminal
-                      </span>
-                    </Link>
-
-                    <Link
-                      href="/catalogue?category=barcode-scanners"
-                      className="group relative aspect-square w-full rounded-2xl bg-[#EAF1E7] dark:bg-[#18281e] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[-1deg] hover:rotate-0"
-                      title="Handheld Barcode Scanner"
-                    >
-                      <div className="w-full flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
-                        <span>Scan</span>
-                        <span className="text-brand-700 dark:text-brand-300">2D</span>
-                      </div>
-                      <div className="relative size-16 sm:size-20 lg:size-24 flex items-center justify-center">
-                        <Image
-                          src="/logo.png"
-                          alt="Barcode Scanner"
-                          fill
-                          sizes="120px"
-                          priority
-                          loading="eager"
-                          className="object-contain transition-transform duration-500 group-hover:scale-110"
-                        />
-                      </div>
-                      <span className="text-[10px] font-bold text-foreground line-clamp-1 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
-                        Scanner
-                      </span>
-                    </Link>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/35 transition-opacity group-hover:opacity-90" />
+                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
+                          <span className="px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-wider border border-white/20">
+                            {tile.tag}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-accent text-[9px] font-black text-accent-foreground uppercase tracking-wider shadow-xs">
+                            {tile.subtag}
+                          </span>
+                        </div>
+                        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10">
+                          <span className="text-[11px] sm:text-xs font-bold text-white drop-shadow-sm line-clamp-1 group-hover:text-accent-300 transition-colors">
+                            {tile.title}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
 
-                  {/* Column 2: Stepped down */}
-                  <div className="flex flex-col gap-2.5 sm:gap-3.5 pt-8 sm:pt-12 lg:pt-14">
-                    <Link
-                      href="/catalogue/omnidirectional-countertop-scanner"
-                      className="hidden lg:flex group relative aspect-square w-full rounded-2xl bg-[#FDECE6] dark:bg-[#2e1b18] p-3 flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[1.5deg] hover:rotate-0"
-                      title="Omnidirectional Counter Scanner"
-                    >
-                      <div className="w-full flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
-                        <span>Omni</span>
-                        <span className="text-accent">CS-900</span>
-                      </div>
-                      <div className="relative size-16 sm:size-20 lg:size-24 flex items-center justify-center">
+                  {/* Column 2: Stepped down (2 tiles) */}
+                  <div className="flex flex-col gap-2.5 sm:gap-3.5 pt-6 sm:pt-10 lg:pt-12">
+                    {heroTiles.slice(3, 5).map((tile) => (
+                      <Link
+                        key={tile.id}
+                        href={tile.href || "/catalogue"}
+                        className={`group relative aspect-square w-full rounded-2xl overflow-hidden border border-border/80 bg-secondary/20 shadow-xs transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${tile.rotateClass}`}
+                        title={tile.title}
+                      >
                         <Image
-                          src="/logo.png"
-                          alt="Omnidirectional Countertop Scanner"
+                          src={tile.mediaUrl || "/logo.png"}
+                          alt={tile.title}
                           fill
-                          sizes="120px"
+                          sizes="(max-width: 768px) 33vw, 20vw"
                           priority
                           loading="eager"
-                          className="object-contain transition-transform duration-500 group-hover:scale-110"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                      </div>
-                      <span className="text-[10px] font-bold text-foreground line-clamp-1 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
-                        Omni Scanner
-                      </span>
-                    </Link>
-
-                    <Link
-                      href="/catalogue/heavy-duty-thermal-receipt-printer"
-                      className="group relative aspect-square w-full rounded-2xl bg-[#FAECE4] dark:bg-[#2c1d1a] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[-1deg] hover:rotate-0"
-                      title="High-Speed Thermal Receipt Printer"
-                    >
-                      <div className="w-full flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
-                        <span>Print</span>
-                        <span className="text-accent">300</span>
-                      </div>
-                      <div className="relative size-16 sm:size-20 lg:size-24 flex items-center justify-center">
-                        <Image
-                          src="/logo.png"
-                          alt="Thermal Receipt Printer"
-                          fill
-                          sizes="120px"
-                          priority
-                          loading="eager"
-                          className="object-contain transition-transform duration-500 group-hover:scale-110"
-                        />
-                      </div>
-                      <span className="text-[10px] font-bold text-foreground line-clamp-1 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
-                        Printer
-                      </span>
-                    </Link>
-
-                    <Link
-                      href="/catalogue/heavy-duty-steel-cash-drawer"
-                      className="group relative aspect-square w-full rounded-2xl bg-[#E8EDF8] dark:bg-[#1a233a] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[1deg] hover:rotate-0"
-                      title="Heavy-Duty Cash Drawer"
-                    >
-                      <div className="w-full flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
-                        <span>Safe</span>
-                        <span className="text-brand-700 dark:text-brand-300">RJ11</span>
-                      </div>
-                      <div className="relative size-16 sm:size-20 lg:size-24 flex items-center justify-center">
-                        <Image
-                          src="/logo.png"
-                          alt="Cash Drawer"
-                          fill
-                          sizes="120px"
-                          priority
-                          loading="eager"
-                          className="object-contain transition-transform duration-500 group-hover:scale-110"
-                        />
-                      </div>
-                      <span className="text-[10px] font-bold text-foreground line-clamp-1 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
-                        Drawer
-                      </span>
-                    </Link>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/35 transition-opacity group-hover:opacity-90" />
+                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
+                          <span className="px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-wider border border-white/20">
+                            {tile.tag}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-accent text-[9px] font-black text-accent-foreground uppercase tracking-wider shadow-xs">
+                            {tile.subtag}
+                          </span>
+                        </div>
+                        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10">
+                          <span className="text-[11px] sm:text-xs font-bold text-white drop-shadow-sm line-clamp-1 group-hover:text-accent-300 transition-colors">
+                            {tile.title}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
 
-                  {/* Column 3: Stepped midway */}
-                  <div className="flex flex-col gap-2.5 sm:gap-3.5 pt-4 sm:pt-6 lg:pt-7">
-                    <Link
-                      href="/catalogue/interactive-self-service-kiosk"
-                      className="hidden lg:flex group relative aspect-square w-full rounded-2xl bg-[#EAEBF8] dark:bg-[#191e38] p-3 flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[-1deg] hover:rotate-0"
-                      title="Self-Ordering Interactive Kiosk"
-                    >
-                      <div className="w-full flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
-                        <span>Kiosk</span>
-                        <span className="text-brand-700 dark:text-brand-300">21.5&quot;</span>
-                      </div>
-                      <div className="relative size-16 sm:size-20 lg:size-24 flex items-center justify-center">
+                  {/* Column 3: Stepped midway (3 tiles) */}
+                  <div className="flex flex-col gap-2.5 sm:gap-3.5 pt-3 sm:pt-5 lg:pt-6">
+                    {heroTiles.slice(5, 8).map((tile) => (
+                      <Link
+                        key={tile.id}
+                        href={tile.href || "/catalogue"}
+                        className={`group relative aspect-square w-full rounded-2xl overflow-hidden border border-border/80 bg-secondary/20 shadow-xs transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${tile.rotateClass}`}
+                        title={tile.title}
+                      >
                         <Image
-                          src="/logo.png"
-                          alt="Self-Ordering Kiosk"
+                          src={tile.mediaUrl || "/logo.png"}
+                          alt={tile.title}
                           fill
-                          sizes="120px"
+                          sizes="(max-width: 768px) 33vw, 20vw"
                           priority
                           loading="eager"
-                          className="object-contain transition-transform duration-500 group-hover:scale-110"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                      </div>
-                      <span className="text-[10px] font-bold text-foreground line-clamp-1 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
-                        Smart Kiosk
-                      </span>
-                    </Link>
-
-                    <Link
-                      href="/catalogue?category=pos-terminals"
-                      className="group relative aspect-square w-full rounded-2xl bg-[#FEF6E9] dark:bg-[#282218] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[1.5deg] hover:rotate-0"
-                      title="Customer Pole Display"
-                    >
-                      <div className="w-full flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
-                        <span>Pole</span>
-                        <span className="text-brand-700 dark:text-brand-300">VFD</span>
-                      </div>
-                      <div className="relative size-16 sm:size-20 lg:size-24 flex items-center justify-center">
-                        <Image
-                          src="/logo.png"
-                          alt="Customer Display"
-                          fill
-                          sizes="120px"
-                          priority
-                          loading="eager"
-                          className="object-contain transition-transform duration-500 group-hover:scale-110"
-                        />
-                      </div>
-                      <span className="text-[10px] font-bold text-foreground line-clamp-1 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
-                        Display
-                      </span>
-                    </Link>
-
-                    <Link
-                      href="/catalogue?category=kiosks"
-                      className="group relative aspect-square w-full rounded-2xl bg-[#EAF4F6] dark:bg-[#16272e] p-3 flex flex-col items-center justify-between overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rotate-[-1.5deg] hover:rotate-0"
-                      title="Kiosk Engine"
-                    >
-                      <div className="w-full flex items-center justify-between text-[9px] font-bold text-muted-foreground uppercase tracking-wider">
-                        <span>Kiosk</span>
-                        <span className="text-emerald-600 dark:text-emerald-400">OEM</span>
-                      </div>
-                      <div className="relative size-16 sm:size-20 lg:size-24 flex items-center justify-center">
-                        <Image
-                          src="/logo.png"
-                          alt="Kiosk Engine"
-                          fill
-                          sizes="120px"
-                          priority
-                          loading="eager"
-                          className="object-contain transition-transform duration-500 group-hover:scale-110"
-                        />
-                      </div>
-                      <span className="text-[10px] font-bold text-foreground line-clamp-1 group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
-                        Kiosk
-                      </span>
-                    </Link>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/35 transition-opacity group-hover:opacity-90" />
+                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10">
+                          <span className="px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-wider border border-white/20">
+                            {tile.tag}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-accent text-[9px] font-black text-accent-foreground uppercase tracking-wider shadow-xs">
+                            {tile.subtag}
+                          </span>
+                        </div>
+                        <div className="absolute bottom-2.5 left-2.5 right-2.5 z-10">
+                          <span className="text-[11px] sm:text-xs font-bold text-white drop-shadow-sm line-clamp-1 group-hover:text-accent-300 transition-colors">
+                            {tile.title}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 </div>
               </Reveal>
@@ -611,8 +570,12 @@ export default async function HomePage() {
                 className="p-8 rounded-3xl bg-card border border-border relative overflow-hidden flex flex-col justify-between"
               >
                 <span
+                  aria-hidden="true"
+                  role="presentation"
                   className={`text-5xl font-black select-none ${
-                    i === 1 ? "text-accent/20" : "text-brand-500/20 dark:text-brand-400/20"
+                    i === 1
+                      ? "text-accent-700/80 dark:text-accent-400/80"
+                      : "text-brand-700/80 dark:text-brand-400/80"
                   }`}
                 >
                   {pillar.number}
@@ -621,7 +584,7 @@ export default async function HomePage() {
                   <div
                     className={`size-10 rounded-2xl flex items-center justify-center ${
                       i === 1
-                        ? "bg-accent-50 dark:bg-accent-900/30 text-accent"
+                        ? "bg-accent-50 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400"
                         : "bg-brand-50 dark:bg-brand-900/50 text-brand-700 dark:text-brand-300"
                     }`}
                   >

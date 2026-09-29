@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { user } from "./auth";
 import { categories, productDocuments, productImages, productSpecs, products } from "./catalogue";
+import { contentBlocks, pageSeo, partners, solutions, testimonials } from "./content";
 import { enquiries, enquiryItems, enquiryNotes, enquiryStatusHistory } from "./enquiries";
 import { media } from "./media";
 
@@ -55,4 +56,24 @@ export const enquiryStatusHistoryRelations = relations(enquiryStatusHistory, ({ 
     references: [enquiries.id],
   }),
   actor: one(user, { fields: [enquiryStatusHistory.changedBy], references: [user.id] }),
+}));
+
+export const contentBlocksRelations = relations(contentBlocks, ({ one }) => ({
+  media: one(media, { fields: [contentBlocks.mediaId], references: [media.id] }),
+}));
+
+export const solutionsRelations = relations(solutions, ({ one }) => ({
+  media: one(media, { fields: [solutions.mediaId], references: [media.id] }),
+}));
+
+export const testimonialsRelations = relations(testimonials, ({ one }) => ({
+  avatar: one(media, { fields: [testimonials.avatarMediaId], references: [media.id] }),
+}));
+
+export const partnersRelations = relations(partners, ({ one }) => ({
+  logo: one(media, { fields: [partners.logoMediaId], references: [media.id] }),
+}));
+
+export const pageSeoRelations = relations(pageSeo, ({ one }) => ({
+  ogMedia: one(media, { fields: [pageSeo.ogMediaId], references: [media.id] }),
 }));
