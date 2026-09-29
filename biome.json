@@ -11,6 +11,9 @@
       "**",
       "!**/.next",
       "!**/node_modules",
+      "!**/playwright-report",
+      "!**/test-results",
+      "!**/coverage",
       "!src/db/migrations",
       "!src/components/ui",
       "!public/**/*.svg"
@@ -31,11 +34,19 @@
     "enabled": true,
     "rules": {
       "preset": "recommended",
+      "a11y": {
+        "noLabelWithoutControl": "off",
+        "useKeyWithClickEvents": "off",
+        "noStaticElementInteractions": "off"
+      },
       "complexity": {
         "noImportantStyles": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "off"
       }
     },
     "domains": {

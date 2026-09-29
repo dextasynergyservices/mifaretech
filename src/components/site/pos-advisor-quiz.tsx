@@ -60,7 +60,9 @@ export function PosAdvisorQuiz() {
   return (
     <div className="p-8 sm:p-12 rounded-3xl bg-card border border-border shadow-xl">
       <div className="text-center max-w-xl mx-auto mb-8">
-        <span className="editorial-tag text-accent">Hardware Recommendation Quiz</span>
+        <span className="editorial-tag text-accent-700 dark:text-accent-400">
+          Hardware Recommendation Quiz
+        </span>
         <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
           Find the right POS for your business
         </h2>

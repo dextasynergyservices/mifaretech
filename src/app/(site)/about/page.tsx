@@ -147,7 +147,9 @@ export default async function AboutPage() {
                   <span className="text-base font-black uppercase tracking-wider text-foreground">
                     {partner.name}
                   </span>
-                  <p className="text-xs text-accent font-bold">{partner.accreditationNote}</p>
+                  <p className="text-xs text-accent-700 dark:text-accent-400 font-bold">
+                    {partner.accreditationNote}
+                  </p>
                 </div>
               ))}
             </div>
@@ -185,7 +187,9 @@ export default async function AboutPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold">Operations &amp; Distribution Lead</h3>
-                  <p className="editorial-tag text-accent">Technical Procurement</p>
+                  <p className="editorial-tag text-accent-700 dark:text-accent-400">
+                    Technical Procurement
+                  </p>
                 </div>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -237,7 +241,13 @@ export default async function AboutPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {values.map((val, idx) => (
             <div key={val.title} className="p-6 rounded-3xl bg-card border border-border space-y-3">
-              <span className="text-3xl font-black text-brand-500/20">0{idx + 1}</span>
+              <span
+                aria-hidden="true"
+                role="presentation"
+                className="text-3xl font-black text-brand-700/80 dark:text-brand-400/80 select-none"
+              >
+                0{idx + 1}
+              </span>
               <h3 className="text-base font-bold tracking-tight">{val.title}</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">{val.desc}</p>
             </div>

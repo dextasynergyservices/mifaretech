@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { getPageSeo } from "@/server/queries";
+import { getPageSeo, getSettings } from "@/server/queries";
 import { ContactContent } from "./contact-content";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,7 +13,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const [contactSettings, whatsappSettings] = await Promise.all([
+    getSettings("contact"),
+    getSettings("whatsapp"),
+  ]);
+
   return (
     <Suspense
       fallback={
@@ -23,7 +28,7 @@ export default function ContactPage() {
         </div>
       }
     >
-      <ContactContent />
+      <ContactContent contactSettings={contactSettings} whatsappSettings={whatsappSettings} />
     </Suspense>
   );
 }

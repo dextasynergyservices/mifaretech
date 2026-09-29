@@ -81,7 +81,12 @@ async function getCaptchaToken(): Promise<string> {
   });
 }
 
-export function ContactContent() {
+interface ContactContentProps {
+  contactSettings?: Record<string, unknown> | null;
+  whatsappSettings?: Record<string, unknown> | null;
+}
+
+export function ContactContent({ contactSettings, whatsappSettings }: ContactContentProps = {}) {
   const searchParams = useSearchParams();
   const { items, itemCount, removeItem, updateQuantity, clearBasket } = useEnquiryBasket();
   const [isPending, startTransition] = useTransition();
@@ -89,6 +94,19 @@ export function ContactContent() {
   const [submittedReference, setSubmittedReference] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [quizDetails, setQuizDetails] = useState<Record<string, string> | null>(null);
+
+  // Dynamic Contact & WhatsApp values from site_settings backend
+  const phones = (contactSettings?.phones as string[]) || ["+44 7448 670925"];
+  const emails = (contactSettings?.emails as string[]) || ["sales@mifaretech.co.uk"];
+  const address = (contactSettings?.address as string) || "United Kingdom & West Africa";
+  const hours = (contactSettings?.hours as string) || "Mon – Fri: 08:30 – 17:30 GMT";
+
+  const waRawNumber =
+    (whatsappSettings?.number as string)?.replace(/[^0-9]/g, "") || "447448670925";
+  const waDefaultMessage =
+    (whatsappSettings?.defaultMessage as string) ||
+    "Hello Mifaretech, I would like to enquire about your POS hardware";
+  const waHref = `https://wa.me/${waRawNumber}?text=${encodeURIComponent(waDefaultMessage)}`;
 
   // Check if reference is in URL (e.g. from progressive enhancement redirect)
   useEffect(() => {
@@ -250,12 +268,37 @@ export function ContactContent() {
     });
   };
 
+  const [securityConsent, setSecurityConsent] = useState(true);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("mft_cookie_consent");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.security === false) {
+          setSecurityConsent(false);
+        }
+      }
+    } catch {
+      // Default to allowed
+    }
+
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && typeof detail.security === "boolean") {
+        setSecurityConsent(detail.security);
+      }
+    };
+    window.addEventListener("cookie-consent-change", handler);
+    return () => window.removeEventListener("cookie-consent-change", handler);
+  }, []);
+
   const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
   return (
     <div className="flex flex-col gap-16 pb-24 pt-8 sm:pt-14 overflow-x-hidden">
-      {/* reCAPTCHA v3 script */}
-      {recaptchaSiteKey && !recaptchaSiteKey.includes("placeholder") && (
+      {/* reCAPTCHA v3 script - blocked until or unless security consent is active */}
+      {securityConsent && recaptchaSiteKey && !recaptchaSiteKey.includes("placeholder") && (
         <Script
           src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`}
           strategy="lazyOnload"
@@ -318,7 +361,7 @@ export function ContactContent() {
                     href={`https://wa.me/447448670925?text=Hello%20Mifaretech,%20I%20have%20submitted%20enquiry%20${submittedReference}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-xs"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-xs"
                   >
                     <MessageCircle className="size-4" />
                     <span>Follow up on WhatsApp</span>
@@ -714,10 +757,10 @@ export function ContactContent() {
                 our POS specialist.
               </p>
               <a
-                href="https://wa.me/447448670925?text=Hello%20Mifaretech,%20I%20would%20like%20to%20enquire%20about%20your%20POS%20hardware"
+                href={waHref}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-xs"
+                className="w-full inline-flex items-center justify-center gap-2 py-3 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs uppercase tracking-wider transition-colors shadow-xs"
               >
                 <span>Chat on WhatsApp</span>
               </a>
@@ -734,8 +777,11 @@ export function ContactContent() {
                   <Phone className="size-4 text-brand-700 dark:text-brand-300 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-bold text-foreground">Direct &amp; WhatsApp</p>
-                    <a href="tel:+447448670925" className="text-muted-foreground hover:underline">
-                      +44 7448 670925
+                    <a
+                      href={`tel:${phones[0]?.replace(/\s+/g, "") || "+447448670925"}`}
+                      className="text-muted-foreground hover:underline"
+                    >
+                      {phones[0] || "+44 7448 670925"}
                     </a>
                   </div>
                 </div>
@@ -745,10 +791,10 @@ export function ContactContent() {
                   <div>
                     <p className="font-bold text-foreground">Sales &amp; Quotations</p>
                     <a
-                      href="mailto:sales@mifaretech.co.uk"
+                      href={`mailto:${emails[0] || "sales@mifaretech.co.uk"}`}
                       className="text-muted-foreground hover:underline"
                     >
-                      sales@mifaretech.co.uk
+                      {emails[0] || "sales@mifaretech.co.uk"}
                     </a>
                   </div>
                 </div>
@@ -757,7 +803,7 @@ export function ContactContent() {
                   <Clock className="size-4 text-brand-700 dark:text-brand-300 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-bold text-foreground">Operating Hours</p>
-                    <p className="text-muted-foreground">Mon – Fri: 08:30 – 17:30 GMT</p>
+                    <p className="text-muted-foreground">{hours}</p>
                   </div>
                 </div>
 
@@ -765,7 +811,7 @@ export function ContactContent() {
                   <MapPin className="size-4 text-brand-700 dark:text-brand-300 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-bold text-foreground">Distribution Hubs</p>
-                    <p className="text-muted-foreground">United Kingdom &amp; West Africa</p>
+                    <p className="text-muted-foreground">{address}</p>
                   </div>
                 </div>
               </div>

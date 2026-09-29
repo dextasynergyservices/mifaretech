@@ -5,7 +5,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
-  ImageIcon,
   Inbox,
   Layers,
   LayoutDashboard,
@@ -124,14 +123,15 @@ export function AdminShell({ user, children }: AdminShellProps) {
       title: "Hardware Catalogue",
       items: [
         { label: "Products", href: "/admin/catalogue", icon: Monitor },
+        { label: "Categories", href: "/admin/categories", icon: Layers },
         { label: "Solutions", href: "/admin/solutions", icon: Briefcase },
       ],
     },
     {
-      title: "Content & Assets",
+      title: "Content & Configuration",
       items: [
-        { label: "Content Blocks", href: "/admin/content", icon: Layers },
-        { label: "Media Library", href: "/admin/media", icon: ImageIcon },
+        { label: "Site Content", href: "/admin/content", icon: Layers },
+        { label: "Site Settings", href: "/admin/settings", icon: Settings },
       ],
     },
     ...(isAdmin
@@ -140,9 +140,8 @@ export function AdminShell({ user, children }: AdminShellProps) {
             title: "Access & System",
             items: [
               { label: "Staff Users", href: "/admin/users", icon: Users },
-              { label: "Two-Factor Auth", href: "/admin/security/2fa", icon: ShieldCheck },
               { label: "Audit Logs", href: "/admin/audit", icon: ShieldAlert },
-              { label: "Site Settings", href: "/admin/settings", icon: Settings },
+              { label: "Two-Factor Auth", href: "/admin/security/2fa", icon: ShieldCheck },
             ],
           },
         ]
@@ -161,12 +160,12 @@ export function AdminShell({ user, children }: AdminShellProps) {
       return { title: "Inbound Enquiries", group: "Operations" };
     if (pathname.startsWith("/admin/catalogue"))
       return { title: "Hardware Fleet", group: "Hardware Catalogue" };
+    if (pathname.startsWith("/admin/categories"))
+      return { title: "Product Categories", group: "Hardware Catalogue" };
     if (pathname.startsWith("/admin/solutions"))
       return { title: "Industry Solutions", group: "Hardware Catalogue" };
     if (pathname.startsWith("/admin/content"))
       return { title: "Content Management", group: "Content & Assets" };
-    if (pathname.startsWith("/admin/media"))
-      return { title: "Digital Asset Library", group: "Content & Assets" };
     if (pathname.startsWith("/admin/users"))
       return { title: "Staff & Access Control", group: "Access & System" };
     if (pathname.startsWith("/admin/security/2fa"))
@@ -205,7 +204,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
           )}
         </button>
 
-        <div className="space-y-6 overflow-hidden">
+        <div className="shrink-0 mb-4">
           {/* Brand Header */}
           <div className="flex items-center justify-between">
             <Link
@@ -235,7 +234,10 @@ export function AdminShell({ user, children }: AdminShellProps) {
               )}
             </Link>
           </div>
+        </div>
 
+        {/* Scrollable Navigation Body */}
+        <div className="flex-1 overflow-y-auto min-h-0 space-y-4 pr-1 scrollbar-thin">
           {/* Staff User Card */}
           <div
             className={`p-2.5 rounded-2xl bg-secondary/50 border border-border/80 flex items-center transition-all ${
@@ -254,7 +256,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
                   </span>
                   <span
                     className={`px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase ${
-                      user.role === "admin"
+                      isAdmin
                         ? "bg-brand-600/10 text-brand-700 dark:bg-brand-400/10 dark:text-brand-300 border border-brand-500/20"
                         : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
                     }`}
@@ -270,7 +272,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
           </div>
 
           {/* Navigation Item Groups */}
-          <div className="space-y-4 pt-1">
+          <div className="space-y-4 pt-1 pb-4">
             {navGroups.map((group) => (
               <div key={group.title} className="space-y-1">
                 {!isCollapsed && (
@@ -363,7 +365,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
                     Mifaretech fleet management console
                   </SheetDescription>
                 </SheetHeader>
-                <div className="mt-4 flex-1 space-y-4">
+                <div className="mt-4 flex-1 space-y-4 overflow-y-auto pr-1 scrollbar-thin">
                   {navGroups.map((group) => (
                     <div key={group.title} className="space-y-1">
                       <span className="px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
