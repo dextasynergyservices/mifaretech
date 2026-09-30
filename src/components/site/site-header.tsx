@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingBag, Zap } from "lucide-react";
+import { ShoppingBag, X, Zap } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,8 +24,18 @@ export function SiteHeader() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMobileMenuOpen(false);
+        setEnergyPanelOpen(false);
+      }
+    };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   // Close mobile menu on page navigation
@@ -114,7 +124,10 @@ export function SiteHeader() {
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setEnergyPanelOpen(!energyPanelOpen)}
+                onClick={() => {
+                  setEnergyPanelOpen(!energyPanelOpen);
+                  setMobileMenuOpen(false);
+                }}
                 aria-expanded={energyPanelOpen}
                 aria-label={`Energy efficiency settings: ${energyRating} usage`}
                 className="relative inline-flex items-center justify-center size-8 sm:size-9 rounded-full border border-border bg-secondary/50 hover:bg-secondary text-foreground transition-all cursor-pointer group"
@@ -135,78 +148,101 @@ export function SiteHeader() {
               {/* Energy Control Dropdown */}
               <AnimatePresence>
                 {energyPanelOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                    transition={{ duration: 0.18 }}
-                    className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] p-5 rounded-2xl bg-card border border-border shadow-2xl z-50 text-foreground"
-                  >
-                    <div className="flex items-center justify-between pb-3 border-b border-border/70">
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                          Efficiency Rating
-                        </p>
-                        <p className="text-sm font-bold text-foreground">Battery & Performance</p>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${energyColor}`}>
-                        {energyRating} Usage
-                      </span>
-                    </div>
+                  <>
+                    {/* Click-outside backdrop */}
+                    <div
+                      className="fixed inset-0 z-40 bg-black/20 sm:bg-transparent"
+                      onClick={() => setEnergyPanelOpen(false)}
+                      aria-hidden="true"
+                    />
 
-                    <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-                      Enabling dark mode and reducing animation reduces GPU/CPU demand, saving up to
-                      35% device battery.
-                    </p>
-
-                    <div className="mt-4 space-y-3">
-                      {/* Dark Mode Switch */}
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/60">
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                      transition={{ duration: 0.18 }}
+                      className="fixed left-3 right-3 top-[4.5rem] sm:absolute sm:top-full sm:left-auto sm:right-0 sm:mt-2 w-auto sm:w-80 max-w-sm sm:max-w-none mx-auto sm:mx-0 p-5 rounded-2xl bg-card border border-border shadow-2xl z-50 text-foreground"
+                    >
+                      <div className="flex items-center justify-between pb-3 border-b border-border/70">
                         <div>
-                          <p className="text-xs font-semibold">Dark mode</p>
-                          <p className="text-[11px] text-muted-foreground">
-                            Reduces display power draw
+                          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                            Efficiency Rating
                           </p>
+                          <p className="text-sm font-bold text-foreground">Battery & Performance</p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => setTheme(isDarkMode ? "light" : "dark")}
-                          className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
-                            isDarkMode ? "bg-brand-700" : "bg-neutral-300 dark:bg-neutral-700"
-                          }`}
-                        >
+                        <div className="flex items-center gap-2">
                           <span
-                            className={`block size-4.5 rounded-full bg-white transition-transform transform ${
-                              isDarkMode ? "translate-x-5.5" : "translate-x-1"
-                            } top-0.5 absolute`}
-                          />
-                        </button>
+                            className={`px-2 py-0.5 rounded-full text-xs font-bold ${energyColor}`}
+                          >
+                            {energyRating} Usage
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setEnergyPanelOpen(false)}
+                            className="size-6 inline-flex items-center justify-center rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors sm:hidden cursor-pointer"
+                            aria-label="Close energy panel"
+                          >
+                            <X className="size-3.5" />
+                          </button>
+                        </div>
                       </div>
 
-                      {/* Reduce Motion Switch */}
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/60">
-                        <div>
-                          <p className="text-xs font-semibold">Reduce animation</p>
-                          <p className="text-[11px] text-muted-foreground">
-                            Minimizes CPU rendering cycles
-                          </p>
+                      <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+                        Enabling dark mode and reducing animation reduces GPU/CPU demand, saving up
+                        to 35% device battery.
+                      </p>
+
+                      <div className="mt-4 space-y-3">
+                        {/* Dark Mode Switch */}
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/60">
+                          <div>
+                            <p className="text-xs font-semibold">Dark mode</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              Reduces display power draw
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setTheme(isDarkMode ? "light" : "dark")}
+                            className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                              isDarkMode ? "bg-brand-700" : "bg-neutral-300 dark:bg-neutral-700"
+                            }`}
+                          >
+                            <span
+                              className={`block size-4.5 rounded-full bg-white transition-transform transform ${
+                                isDarkMode ? "translate-x-5.5" : "translate-x-1"
+                              } top-0.5 absolute`}
+                            />
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={toggleReducedMotion}
-                          className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
-                            isReducedMotion ? "bg-brand-700" : "bg-neutral-300 dark:bg-neutral-700"
-                          }`}
-                        >
-                          <span
-                            className={`block size-4.5 rounded-full bg-white transition-transform transform ${
-                              isReducedMotion ? "translate-x-5.5" : "translate-x-1"
-                            } top-0.5 absolute`}
-                          />
-                        </button>
+
+                        {/* Reduce Motion Switch */}
+                        <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/60">
+                          <div>
+                            <p className="text-xs font-semibold">Reduce animation</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              Minimizes CPU rendering cycles
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={toggleReducedMotion}
+                            className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
+                              isReducedMotion
+                                ? "bg-brand-700"
+                                : "bg-neutral-300 dark:bg-neutral-700"
+                            }`}
+                          >
+                            <span
+                              className={`block size-4.5 rounded-full bg-white transition-transform transform ${
+                                isReducedMotion ? "translate-x-5.5" : "translate-x-1"
+                              } top-0.5 absolute`}
+                            />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>
@@ -223,7 +259,10 @@ export function SiteHeader() {
             {/* Modern Animated Morphing Hamburger Button (Noho-Style) */}
             <button
               type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => {
+                setMobileMenuOpen(!mobileMenuOpen);
+                setEnergyPanelOpen(false);
+              }}
               className="md:hidden relative flex flex-col items-center justify-center size-9 rounded-xl border border-border bg-secondary/50 hover:bg-secondary text-foreground transition-all cursor-pointer focus:outline-hidden"
               aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={mobileMenuOpen}
