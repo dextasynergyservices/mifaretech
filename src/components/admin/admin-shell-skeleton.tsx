@@ -1,8 +1,8 @@
 export function AdminShellSkeleton() {
   return (
-    <div className="min-h-screen bg-background flex flex-col lg:flex-row">
+    <div className="h-screen bg-background flex flex-col lg:flex-row overflow-hidden">
       {/* Desktop Sidebar Skeleton */}
-      <aside className="hidden lg:flex flex-col border-r border-border bg-card/60 shrink-0 sticky top-0 h-screen w-64 xl:w-72 justify-between p-4 animate-pulse">
+      <aside className="hidden lg:flex flex-col border-r border-border bg-card shrink-0 h-full w-64 xl:w-72 justify-between p-4 animate-pulse">
         <div className="space-y-6">
           {/* Logo skeleton */}
           <div className="flex items-center gap-3 px-1">
@@ -10,15 +10,6 @@ export function AdminShellSkeleton() {
             <div className="space-y-1.5 flex-1">
               <div className="h-4 w-28 bg-muted rounded" />
               <div className="h-2.5 w-16 bg-muted/60 rounded" />
-            </div>
-          </div>
-
-          {/* User badge skeleton */}
-          <div className="p-3 rounded-2xl bg-secondary/30 border border-border/40 flex items-center gap-3">
-            <div className="size-8 rounded-xl bg-muted shrink-0" />
-            <div className="space-y-1.5 flex-1">
-              <div className="h-3.5 w-24 bg-muted rounded" />
-              <div className="h-2.5 w-32 bg-muted/60 rounded" />
             </div>
           </div>
 
@@ -38,9 +29,9 @@ export function AdminShellSkeleton() {
       </aside>
 
       {/* Main Content Workspace Skeleton */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
         {/* Header Skeleton */}
-        <header className="sticky top-0 z-30 bg-background/80 border-b border-border/80 px-4 sm:px-8 py-3.5 flex items-center justify-between animate-pulse">
+        <header className="sticky top-0 z-30 h-16 bg-card/95 backdrop-blur-md border-b border-border/80 px-4 sm:px-8 py-3.5 flex items-center justify-between animate-pulse shrink-0">
           <div className="flex items-center gap-3">
             <div className="size-8 rounded-lg bg-muted" />
             <div className="h-4 w-36 bg-muted rounded" />
@@ -53,7 +44,7 @@ export function AdminShellSkeleton() {
         </header>
 
         {/* Content Skeleton */}
-        <main className="flex-1 p-4 sm:p-8 lg:p-10 max-w-7xl w-full mx-auto space-y-8 animate-pulse">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 lg:p-10 max-w-7xl w-full mx-auto space-y-8 animate-pulse">
           <div className="flex justify-between items-center">
             <div className="space-y-2">
               <div className="h-7 w-48 bg-muted rounded-lg" />

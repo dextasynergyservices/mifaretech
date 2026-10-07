@@ -1,7 +1,19 @@
-import { ArrowRight, CheckCircle2, Headphones, ShieldCheck, Star, Wrench } from "lucide-react";
+import {
+  ArrowRight,
+  Award,
+  CheckCircle2,
+  Headphones,
+  KeyRound,
+  Monitor,
+  Network,
+  ShieldCheck,
+  Star,
+  Wrench,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { Marquee } from "@/components/motion/marquee";
 import { Reveal } from "@/components/motion/reveal";
 import { CompareToggleButton } from "@/components/site/compare-toggle-button";
 import { EnquireButton } from "@/components/site/enquire-button";
@@ -42,18 +54,18 @@ export default async function HomePage() {
   )?.pillars || [
     {
       number: "01",
-      title: "Direct Factory Provenance",
-      desc: "Zero grey-market risk. All hardware originates directly from Fametech assembly lines with sealed warranties.",
+      title: "True End-to-End Partner",
+      desc: "We act as your reseller, system integrator, installer, and software programmer — delivering complete solutions from system design to on-site commissioning and maintenance.",
     },
     {
       number: "02",
-      title: "Counter Uptime Engineering",
-      desc: "Commercial fanless aluminum housings protect internal components from dust, grease, and continuous vibration.",
+      title: "Authentic Hardware & Direct Provenance",
+      desc: "Authorised affiliate of Fametech (TYSSO) and supplier of genuine MIFARE chips with full serial tracking, verified warranties, and zero grey-market risk.",
     },
     {
       number: "03",
-      title: "Dedicated Hardware Specialists",
-      desc: "Direct access to specialists who understand interface drivers, OPOS configurations, and multi-terminal deployments.",
+      title: "Unified System Integration",
+      desc: "We bridge physical RFID access control with Property Management Systems (OPERA PMS) and Point-of-Sale (Micros POS) platforms so operations communicate seamlessly.",
     },
   ];
 
@@ -169,16 +181,28 @@ export default async function HomePage() {
                 <ShieldCheck className="size-3.5 text-accent" />
                 <span>
                   {(heroBlock?.data as { badge?: string })?.badge ||
-                    "Accredited Fametech Distributor"}
+                    "Smart Technology Solutions Partner"}
                 </span>
               </div>
 
               <Reveal delay={0.1}>
-                <div className="space-y-2">
-                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.15] text-foreground">
-                    {heroBlock?.title || "We engineer hardware for busy counters"}
+                <div className="space-y-3">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight text-foreground">
+                    {heroBlock?.title ? (
+                      heroBlock.title.split(/(?<=\.)\s+/).map((phrase) => (
+                        <span key={phrase} className="block">
+                          {phrase}
+                        </span>
+                      ))
+                    ) : (
+                      <>
+                        <span className="block">Smart Technology.</span>
+                        <span className="block">Secure Operations.</span>
+                        <span className="block">Smarter Business.</span>
+                      </>
+                    )}
                   </h1>
-                  <p className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-brand-700 dark:text-brand-400">
+                  <p className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight text-brand-700 dark:text-brand-400">
                     Mifaretech <span className="text-accent font-black">...</span>lean forward
                     smartly!
                   </p>
@@ -191,7 +215,7 @@ export default async function HomePage() {
                   dangerouslySetInnerHTML={{
                     __html:
                       heroBlock?.bodyHtml ||
-                      "<p>Accredited distributor of high-performance POS touch terminals, thermal receipt printers, omnidirectional barcode scanners, and enterprise retail infrastructure. Built for non-stop reliability.</p>",
+                      "<p>Mifaretech System Solutions supplies, implements, and integrates smart technology systems for businesses and institutions across the UK and internationally. From RFID and hotel door locks to enterprise POS hardware and custom software integrations.</p>",
                   }}
                 />
               </Reveal>
@@ -351,84 +375,269 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 2. PARTNERS & ACCREDITATION STRIP */}
-      <section className="border-y border-border py-8 bg-secondary/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="shrink-0 text-center md:text-left">
+      {/* 2. PARTNERS & ACCREDITATION MARQUEE CAROUSEL */}
+      <section className="border-y border-border py-7 bg-secondary/25 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+            <div>
               <p className="editorial-tag text-brand-700 dark:text-brand-300">
-                Authorized Distribution
+                Certified Technology Partners
               </p>
-              <p className="text-sm font-extrabold tracking-tight">
-                Direct Certified Brands &amp; Standards
-              </p>
+              <h3 className="text-sm font-extrabold tracking-tight text-foreground">
+                Authorized Distribution &amp; Enterprise Standards
+              </h3>
             </div>
-
-            <div className="flex flex-wrap items-center justify-center md:justify-end gap-8 sm:gap-12 opacity-85">
-              {partnersList.length > 0 ? (
-                partnersList.map((partner) => (
-                  <span
-                    key={partner.id}
-                    className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {partner.name}
-                  </span>
-                ))
-              ) : (
-                <>
-                  <span className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground">
-                    FAMETECH (TYSSO)
-                  </span>
-                  <span className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground">
-                    INTEL IOT
-                  </span>
-                  <span className="text-sm sm:text-base font-black tracking-widest uppercase text-muted-foreground">
-                    MICROSOFT IOT
-                  </span>
-                </>
-              )}
-            </div>
+            <span className="text-xs font-semibold text-muted-foreground hidden sm:inline-block">
+              Factory warranties &amp; verified serial traceability
+            </span>
           </div>
+        </div>
+
+        {/* Sliding Marquee with gradient edge fades */}
+        <div className="relative w-full overflow-hidden">
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-background to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-background to-transparent z-10" />
+
+          <Marquee speed={30} pauseOnHover className="py-1">
+            {(partnersList.length > 0
+              ? partnersList
+              : [
+                  {
+                    id: "p1",
+                    name: "Fametech (TYSSO)",
+                    accreditationNote: "Authorised Global Hardware Manufacturer",
+                    logoUrl: null,
+                  },
+                  {
+                    id: "p2",
+                    name: "MIFARE / NXP",
+                    accreditationNote: "Genuine Contactless RFID Partner",
+                    logoUrl: null,
+                  },
+                  {
+                    id: "p3",
+                    name: "Oracle Hospitality",
+                    accreditationNote: "OPERA PMS & Micros POS Ecosystem",
+                    logoUrl: null,
+                  },
+                  {
+                    id: "p4",
+                    name: "Intel IoT Solutions",
+                    accreditationNote: "Embedded Processing Partner",
+                    logoUrl: null,
+                  },
+                  {
+                    id: "p5",
+                    name: "Microsoft Windows IoT",
+                    accreditationNote: "Certified OS Architecture",
+                    logoUrl: null,
+                  },
+                ]
+            ).map((partner) => {
+              const logoUrl =
+                "logoUrl" in partner ? (partner as { logoUrl?: string | null }).logoUrl : null;
+              return (
+                <div
+                  key={partner.id}
+                  className="flex items-center gap-3.5 px-5 py-3 rounded-2xl bg-card border border-border/80 shadow-2xs hover:border-brand-500/50 hover:shadow-xs transition-all duration-300 shrink-0 group mx-2"
+                >
+                  {logoUrl ? (
+                    <div className="relative h-8 w-28 shrink-0">
+                      <Image
+                        src={logoUrl}
+                        alt={partner.name}
+                        fill
+                        sizes="112px"
+                        className="object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div className="size-9 rounded-xl bg-brand-50 dark:bg-brand-950/80 border border-brand-200/80 dark:border-brand-800/80 flex items-center justify-center shrink-0">
+                      <Award className="size-4.5 text-brand-600 dark:text-brand-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                  )}
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs sm:text-sm font-black tracking-wider uppercase text-foreground group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors whitespace-nowrap">
+                      {partner.name}
+                    </span>
+                    {partner.accreditationNote && (
+                      <span className="text-[10px] font-semibold text-muted-foreground whitespace-nowrap">
+                        {partner.accreditationNote}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </Marquee>
         </div>
       </section>
 
-      {/* 3. NOHO-STYLE SCROLL STATEMENT WITH INLINE IMAGES */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* 3. CAPABILITIES SHOWCASE — 3 CORE PILLARS */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <Reveal>
-          <div className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-snug sm:leading-tight">
-            <span>POS terminals </span>
-            <span className="inline-flex align-middle mx-1 sm:mx-2 size-8 sm:size-14 rounded-xl border border-border bg-card p-1 overflow-hidden shadow-xs">
-              <Image
-                src="/logo.png"
-                alt="Terminal"
-                width={56}
-                height={56}
-                className="object-contain"
-              />
-            </span>
-            <span> thermal printers </span>
-            <span className="inline-flex align-middle mx-1 sm:mx-2 size-8 sm:size-14 rounded-xl border border-border bg-card p-1 overflow-hidden shadow-xs">
-              <Image
-                src="/logo.png"
-                alt="Printer"
-                width={56}
-                height={56}
-                className="object-contain"
-              />
-            </span>
-            <span> and scanners </span>
-            <span className="inline-flex align-middle mx-1 sm:mx-2 size-8 sm:size-14 rounded-xl border border-border bg-card p-1 overflow-hidden shadow-xs">
-              <Image
-                src="/logo.png"
-                alt="Scanner"
-                width={56}
-                height={56}
-                className="object-contain"
-              />
-            </span>
-            <span> built to withstand the demands of modern commerce.</span>
+          <div className="text-center max-w-3xl mx-auto space-y-3 mb-12 sm:mb-16">
+            <span className="editorial-badge">Integrated Capabilities</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground leading-[1.15]">
+              Unified Technology Systems.
+              <br />
+              <span className="text-brand-700 dark:text-brand-400">
+                Built for Non-Stop Operations.
+              </span>
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+              We connect physical access control, industrial POS hardware, and enterprise software
+              into reliable, synchronized environments that keep transactions moving.
+            </p>
           </div>
         </Reveal>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+          {/* Pillar 1: RFID & Access Control */}
+          <Reveal delay={0.1}>
+            <div className="h-full p-8 rounded-3xl bg-card border border-border hover:border-brand-500/50 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="size-12 rounded-2xl bg-brand-50 dark:bg-brand-900/50 flex items-center justify-center text-brand-700 dark:text-brand-300 group-hover:scale-110 transition-transform">
+                    <KeyRound className="size-6" />
+                  </div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-secondary text-foreground/80 border border-border">
+                    RFID &amp; Hospitality
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold tracking-tight text-foreground group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
+                    RFID &amp; Hotel Access
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed">
+                    Genuine MIFARE Classic, DESFire, and Ultralight credentials, RFID readers, and
+                    electronic hotel door locks engineered for secure room access and entry control.
+                  </p>
+                </div>
+                <ul className="space-y-2 pt-2 border-t border-border/70 text-xs font-semibold text-foreground/85">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                    <span>Mifare-Compatible Hotel Door Locks</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                    <span>Genuine Cards, Fobs &amp; Wristbands</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                    <span>Single-Door to Multi-Site Management</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="pt-6">
+                <Link
+                  href="/solutions"
+                  className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-brand-300 group-hover:translate-x-1 transition-transform"
+                >
+                  <span>Explore Access Solutions</span>
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Pillar 2: POS Hardware & Peripherals */}
+          <Reveal delay={0.2}>
+            <div className="h-full p-8 rounded-3xl bg-card border border-border hover:border-accent-500/50 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="size-12 rounded-2xl bg-accent-50 dark:bg-accent-950/50 flex items-center justify-center text-accent-700 dark:text-accent-400 group-hover:scale-110 transition-transform">
+                    <Monitor className="size-6" />
+                  </div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-secondary text-foreground/80 border border-border">
+                    Fametech (TYSSO)
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold tracking-tight text-foreground group-hover:text-accent-700 dark:group-hover:text-accent-400 transition-colors">
+                    Commercial POS Hardware
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed">
+                    Heavy-duty fanless aluminum touch terminals, jam-free 300mm/s thermal receipt
+                    printers, and omnidirectional 2D barcode scanners built for continuous counter
+                    traffic.
+                  </p>
+                </div>
+                <ul className="space-y-2 pt-2 border-t border-border/70 text-xs font-semibold text-foreground/85">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                    <span>Fanless Die-Cast POS Terminals</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                    <span>300mm/s Auto-Cut Thermal Printers</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                    <span>Omnidirectional 1D/2D Barcode Scanners</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="pt-6">
+                <Link
+                  href="/catalogue"
+                  className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-accent-700 dark:text-accent-400 group-hover:translate-x-1 transition-transform"
+                >
+                  <span>Browse Hardware Fleet</span>
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Pillar 3: Enterprise Software & PMS Integrations */}
+          <Reveal delay={0.3}>
+            <div className="h-full p-8 rounded-3xl bg-card border border-border hover:border-brand-500/50 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="size-12 rounded-2xl bg-brand-50 dark:bg-brand-900/50 flex items-center justify-center text-brand-700 dark:text-brand-300 group-hover:scale-110 transition-transform">
+                    <Network className="size-6" />
+                  </div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-secondary text-foreground/80 border border-border">
+                    OPERA &amp; Micros
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold tracking-tight text-foreground group-hover:text-brand-700 dark:group-hover:text-brand-300 transition-colors">
+                    PMS &amp; Systems Integration
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed">
+                    Direct integration bridging physical room door keycards with OPERA Property
+                    Management Systems, Micros POS software, and closed-loop cashless billing.
+                  </p>
+                </div>
+                <ul className="space-y-2 pt-2 border-t border-border/70 text-xs font-semibold text-foreground/85">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                    <span>OPERA PMS Room Lock Synchronization</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                    <span>Micros POS &amp; Table Order Interfacing</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
+                    <span>Cashless Closed-Loop Payment Systems</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="pt-6">
+                <Link
+                  href="/solutions"
+                  className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-brand-300 group-hover:translate-x-1 transition-transform"
+                >
+                  <span>View Integration Scopes</span>
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </div>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* 4. FEATURED PRODUCTS CATALOGUE CARDS */}

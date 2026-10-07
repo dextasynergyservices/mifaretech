@@ -70,7 +70,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBizSchema) }}
         />
       </head>
-      <body className="min-h-full flex flex-col font-sans bg-background text-foreground overflow-x-hidden w-full max-w-full">
+      <body
+        suppressHydrationWarning
+        className="min-h-full flex flex-col font-sans bg-background text-foreground overflow-x-hidden w-full max-w-full"
+      >
         <Providers>
           {children}
           <Analytics />
