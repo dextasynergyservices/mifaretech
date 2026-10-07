@@ -180,13 +180,13 @@ export function AdminShell({ user, children }: AdminShellProps) {
   const { title: currentTitle, group: currentGroup } = getPageContext();
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col lg:flex-row antialiased">
+    <div className="h-screen bg-background text-foreground flex flex-col lg:flex-row antialiased overflow-hidden">
       {/* ========================================================= */}
       {/* 1. DESKTOP SIDEBAR WITH SLEEK FLOATING BORDER COLLAPSE BUTTON */}
       {/* ========================================================= */}
       <aside
-        className={`hidden lg:flex flex-col border-r border-border/80 bg-card/75 dark:bg-card/45 backdrop-blur-xl shrink-0 sticky top-0 h-screen justify-between transition-[width] duration-300 ease-in-out z-20 ${
-          isCollapsed ? "w-[76px] px-3 py-5" : "w-64 xl:w-72 p-5"
+        className={`hidden lg:flex flex-col border-r border-border bg-card shrink-0 h-full transition-[width] duration-300 ease-in-out z-20 ${
+          isCollapsed ? "w-[76px] px-3 py-4" : "w-64 xl:w-72 p-4.5"
         }`}
       >
         {/* Floating Border Collapse Button right on the boundary between sidebar and main page */}
@@ -204,8 +204,8 @@ export function AdminShell({ user, children }: AdminShellProps) {
           )}
         </button>
 
-        <div className="shrink-0 mb-4">
-          {/* Brand Header */}
+        {/* Top: Brand Header */}
+        <div className="shrink-0 mb-3 pb-2 border-b border-border/60">
           <div className="flex items-center justify-between">
             <Link
               href="/admin"
@@ -236,43 +236,9 @@ export function AdminShell({ user, children }: AdminShellProps) {
           </div>
         </div>
 
-        {/* Scrollable Navigation Body */}
+        {/* Middle: Scrollable Navigation Groups */}
         <div className="flex-1 overflow-y-auto min-h-0 space-y-4 pr-1 scrollbar-thin">
-          {/* Staff User Card */}
-          <div
-            className={`p-2.5 rounded-2xl bg-secondary/50 border border-border/80 flex items-center transition-all ${
-              isCollapsed ? "justify-center" : "gap-3"
-            }`}
-            title={`${user.name} (${user.role || "staff"}) - ${user.email}`}
-          >
-            <div className="size-8 rounded-xl bg-brand-900 text-white dark:bg-brand-500 dark:text-white font-black text-xs flex items-center justify-center shrink-0 uppercase shadow-xs">
-              {user.name?.slice(0, 2) || "AD"}
-            </div>
-            {!isCollapsed && (
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-xs font-bold text-foreground truncate block">
-                    {user.name}
-                  </span>
-                  <span
-                    className={`px-1.5 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase ${
-                      isAdmin
-                        ? "bg-brand-600/10 text-brand-700 dark:bg-brand-400/10 dark:text-brand-300 border border-brand-500/20"
-                        : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
-                    }`}
-                  >
-                    {user.role || "staff"}
-                  </span>
-                </div>
-                <span className="text-[10px] text-muted-foreground truncate block">
-                  {user.email}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Navigation Item Groups */}
-          <div className="space-y-4 pt-1 pb-4">
+          <div className="space-y-4 pt-1 pb-2">
             {navGroups.map((group) => (
               <div key={group.title} className="space-y-1">
                 {!isCollapsed && (
@@ -320,11 +286,11 @@ export function AdminShell({ user, children }: AdminShellProps) {
       </aside>
 
       {/* ========================================================= */}
-      {/* 2. MAIN WORKSPACE WITH MODERN EXECUTIVE ADMIN HEADER */}
+      {/* 2. MAIN WORKSPACE WITH CLEAN STICKY ADMIN HEADER */}
       {/* ========================================================= */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Executive Admin Header */}
-        <header className="sticky top-0 z-30 h-16 bg-background/85 dark:bg-background/80 backdrop-blur-xl border-b border-border/80 px-4 sm:px-8 flex items-center justify-between gap-4">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
+        {/* Sticky Executive Admin Header */}
+        <header className="sticky top-0 z-30 h-16 bg-card/95 backdrop-blur-md border-b border-border/80 px-4 sm:px-8 flex items-center justify-between gap-4 shrink-0">
           {/* Left: Collapse Button & Breadcrumbs */}
           <div className="flex items-center gap-3 min-w-0">
             {/* Desktop header sidebar collapse toggle icon right beside the sidebar */}

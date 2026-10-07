@@ -123,10 +123,17 @@ export async function getPartners() {
   cacheLife("hours");
 
   try {
-    return await db.query.partners.findMany({
+    const list = await db.query.partners.findMany({
       where: eq(partners.isPublished, true),
+      with: {
+        logo: true,
+      },
       orderBy: [asc(partners.sortOrder)],
     });
+    return list.map((p) => ({
+      ...p,
+      logoUrl: p.logo?.secureUrl || null,
+    }));
   } catch {
     return [];
   }

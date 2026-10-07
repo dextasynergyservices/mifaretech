@@ -29,6 +29,7 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "bun run src/db/seed.ts",
     "db:seed:admin": "bun run src/db/seed-admin.ts",
+    "db:sync:content": "bun run src/db/seed-company-content.ts",
     "auth:generate": "better-auth generate --config src/lib/auth.ts --output src/db/schema/auth.ts",
     "clean": "rm -rf .next .turbo node_modules/.cache",
     "validate": "bun run lint && bun run format && bun run typecheck && bun run test"
@@ -39,6 +40,7 @@
     "@neondatabase/serverless": "1.1.0",
     "@react-email/components": "1.0.12",
     "@t3-oss/env-nextjs": "0.13.11",
+    "@tanstack/charts": "1.0.0",
     "@tanstack/react-query": "5.103.2",
     "@tanstack/react-table": "9.2.4",
     "@tiptap/pm": "3.31.3",

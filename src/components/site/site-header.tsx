@@ -47,6 +47,7 @@ export function SiteHeader() {
   }, [pathname]);
 
   const navLinks = [
+    { label: "Home", href: "/" },
     { label: "About", href: "/about" },
     { label: "Catalogue", href: "/catalogue" },
     { label: "Solutions", href: "/solutions" },

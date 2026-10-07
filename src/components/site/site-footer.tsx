@@ -88,18 +88,18 @@ export function SiteFooter({ contactSettings, whatsappSettings }: SiteFooterProp
           </div>
         </div>
 
-        {/* Noho-style Massive Editorial Tagline Display — Positioned just below Hardware Bulletin & Solutions and just on top of main footer */}
+        {/* Subtle Editorial Tagline Watermark */}
         <div
-          className="py-8 sm:py-12 text-center select-none overflow-hidden border-b border-border"
+          className="py-8 sm:py-12 text-center select-none overflow-hidden border-b border-border/30"
           aria-hidden="true"
           role="presentation"
         >
           <p
             role="presentation"
             aria-hidden="true"
-            className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight text-neutral-500 dark:text-neutral-500 transition-colors"
+            className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight text-foreground/8 dark:text-foreground/8 transition-colors select-none"
           >
-            Mifaretech <span className="text-accent-700 dark:text-accent-400 font-black">...</span>
+            Mifaretech <span className="text-accent/30 font-black">...</span>
             lean forward smartly!
           </p>
         </div>
