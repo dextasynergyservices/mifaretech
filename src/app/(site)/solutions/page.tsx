@@ -1,14 +1,21 @@
 import {
   ArrowRight,
+  Building2,
+  Code,
   GraduationCap,
+  HeartPulse,
   Hotel,
+  Layers,
+  Lightbulb,
   type LucideIcon,
+  Network,
   Pill,
   ShieldCheck,
   ShoppingCart,
   Store,
   Truck,
   UtensilsCrossed,
+  Warehouse,
   Wrench,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -19,14 +26,22 @@ import { getPageSeo, getSolutions } from "@/server/queries";
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getPageSeo("solutions");
   return {
-    title: seo?.title || "Industry Solutions & Staging | Mifaretech",
+    title: seo?.title || "Industry Solutions & Services | Mifaretech",
     description:
       seo?.description ||
-      "Tailored counter hardware setups for retail boutiques, supermarkets, restaurants, and pharmacies.",
+      "Smart technology solutions across RFID access control, Mifare hotel door locks, Fametech POS, and enterprise software.",
   };
 }
 
 const industryIconMap: Record<string, LucideIcon> = {
+  "hospitality-hotels": Hotel,
+  "restaurants-food-service": UtensilsCrossed,
+  "retail-apparel": Store,
+  "commercial-offices": Building2,
+  "education-campus": GraduationCap,
+  "healthcare-care-homes": HeartPulse,
+  "leisure-events-warehousing": Warehouse,
+  // legacy fallbacks
   "retail-boutiques": Store,
   "supermarkets-fmcg": ShoppingCart,
   "qsr-hospitality": UtensilsCrossed,
@@ -35,6 +50,14 @@ const industryIconMap: Record<string, LucideIcon> = {
 };
 
 const serviceIconMap: Record<string, LucideIcon> = {
+  "technology-consultancy": Lightbulb,
+  "system-design": Layers,
+  "equipment-supply": Truck,
+  "installation-configuration": Wrench,
+  "software-customisation": Code,
+  "system-integration": Network,
+  "after-sales-support": ShieldCheck,
+  // legacy fallbacks
   "hardware-procurement": Truck,
   "staging-driver-flashing": Wrench,
   training: GraduationCap,

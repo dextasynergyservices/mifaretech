@@ -46,3 +46,7 @@ next-env.d.ts
 mifaretech.md
 CODING_STANDARDS.md
 /docs/*
+about_mifaretech.md
+
+# database seeds
+src/db/seed*.ts

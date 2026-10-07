@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://mifaretech.co.uk";
 const DEFAULT_TITLE = "Mifaretech | ...lean forward smartly!";
 const DEFAULT_DESCRIPTION =
-  "Mifaretech System Solutions — Accredited distributor of Fametech POS terminals, thermal receipt printers, barcode scanners, and retail infrastructure. Non-stop commercial reliability.";
+  "Mifaretech System Solutions — Smart technology solutions across RFID & MIFARE access control, electronic hotel door locks, Fametech POS hardware, and enterprise OPERA PMS & Micros software integrations.";
 
 interface MetadataInput {
   title?: string;
@@ -21,12 +21,16 @@ export function constructMetadata({
   canonical,
   noIndex = false,
   keywords = [
-    "POS terminals",
+    "RFID access control",
+    "MIFARE cards and readers",
+    "Hotel door lock systems",
+    "POS touch terminals",
     "Fametech distributor",
+    "OPERA PMS integration",
+    "Micros POS systems",
     "thermal receipt printers",
     "barcode scanners",
-    "retail automation",
-    "touch POS",
+    "smart technology solutions",
     "Mifaretech",
   ],
 }: MetadataInput = {}): Metadata {
